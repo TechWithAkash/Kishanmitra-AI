@@ -1,0 +1,18 @@
+{
+  "tomato":   {"en": "tomato",   "hi": "टमाटर",  "mr": "टोमॅटो", "agmarknet": "Tomato",
+               "variants": ["tomato", "tomatoes", "tamatar", "tamater", "टमाटर", "टोमॅटो", "टोमाटो"]},
+  "onion":    {"en": "onion",    "hi": "प्याज",  "mr": "कांदा", "agmarknet": "Onion",
+               "variants": ["onion", "onions", "pyaj", "pyaz", "pyaaz", "kanda", "kande", "प्याज", "कांदा", "कांद्या", "कांदे"]},
+  "potato":   {"en": "potato",   "hi": "आलू",    "mr": "बटाटा", "agmarknet": "Potato",
+               "variants": ["potato", "potatoes", "aloo", "alu", "batata", "आलू", "बटाटा", "बटाट्या"]},
+  "wheat":    {"en": "wheat",    "hi": "गेहूं",   "mr": "गहू", "agmarknet": "Wheat",
+               "variants": ["wheat", "gehu", "gehun", "gehoon", "gahu", "गेहूं", "गेहूँ", "गेहु", "गहू", "गव्हा"]},
+  "paddy":    {"en": "paddy",    "hi": "धान",    "mr": "भात", "agmarknet": "Paddy(Dhan)(Common)",
+               "variants": ["paddy", "rice", "dhan", "dhaan", "chawal", "bhat", "धान", "चावल", "भात", "तांदूळ"]},
+  "cotton":   {"en": "cotton",   "hi": "कपास",   "mr": "कापूस", "agmarknet": "Cotton",
+               "variants": ["cotton", "kapas", "kapus", "कपास", "कापूस", "कापसा"]},
+  "soybean":  {"en": "soybean",  "hi": "सोयाबीन", "mr": "सोयाबीन", "agmarknet": "Soyabean",
+               "variants": ["soybean", "soyabean", "soya", "सोयाबीन", "सोयाबिन"]},
+  "chilli":   {"en": "chilli",   "hi": "मिर्च",   "mr": "मिरची", "agmarknet": "Green Chilli",
+               "variants": ["chilli", "chili", "chillies", "mirchi", "mirch", "मिर्च", "मिर्ची", "मिरची"]}
+}
