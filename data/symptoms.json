@@ -1,0 +1,8 @@
+{
+  "yellowing": ["yellow", "yellowing", "peela", "peele", "peeli", "pila", "pile", "पीला", "पीले", "पीली", "पीलापन", "पिवळ"],
+  "spots":     ["spot", "spots", "blight", "dhabba", "dhabbe", "daag", "धब्बा", "धब्बे", "दाग", "ठिपके", "डाग"],
+  "wilting":   ["wilt", "wilting", "drying", "dry", "murjha", "sookh", "sukh", "मुरझा", "सूख", "सुकत", "कोमेज"],
+  "pests":     ["insect", "insects", "pest", "pests", "caterpillar", "worm", "borer", "bollworm", "thrips", "beetle", "whitefly", "white flies", "aphid", "keede", "keeda", "kide", "kida", "illi", "sundi", "कीड़े", "कीड़ा", "कीट", "कीड", "इल्ली", "सुंडी", "अळी", "मावा"],
+  "leaf_curl": ["curl", "curling", "mud rahe", "murd", "मुड़", "मुड", "वाकडी", "चुरडा"],
+  "rot":       ["rot", "rotting", "sad raha", "sad rahe", "galna", "सड़", "सड", "कुज"]
+}
