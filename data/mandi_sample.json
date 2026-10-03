@@ -1,0 +1,21 @@
+{
+  "_note": "Illustrative offline sample used ONLY when the data.gov.in API is unreachable. Not real market data.",
+  "arrival_date": "sample",
+  "records": [
+    {"state": "Maharashtra", "district": "Pune", "market": "Pune", "commodity": "Onion", "modal_price": 1800, "min_price": 1200, "max_price": 2300},
+    {"state": "Maharashtra", "district": "Nashik", "market": "Lasalgaon", "commodity": "Onion", "modal_price": 1750, "min_price": 1100, "max_price": 2200},
+    {"state": "Maharashtra", "district": "Pune", "market": "Pune", "commodity": "Tomato", "modal_price": 1500, "min_price": 800, "max_price": 2000},
+    {"state": "Maharashtra", "district": "Nashik", "market": "Nashik", "commodity": "Tomato", "modal_price": 1400, "min_price": 700, "max_price": 1900},
+    {"state": "Maharashtra", "district": "Pune", "market": "Pune", "commodity": "Potato", "modal_price": 1600, "min_price": 1300, "max_price": 1900},
+    {"state": "Maharashtra", "district": "Latur", "market": "Latur", "commodity": "Soyabean", "modal_price": 4300, "min_price": 4000, "max_price": 4500},
+    {"state": "Maharashtra", "district": "Jalgaon", "market": "Jalgaon", "commodity": "Cotton", "modal_price": 7000, "min_price": 6600, "max_price": 7300},
+    {"state": "Maharashtra", "district": "Nagpur", "market": "Nagpur", "commodity": "Green Chilli", "modal_price": 3000, "min_price": 2500, "max_price": 3500},
+    {"state": "Madhya Pradesh", "district": "Indore", "market": "Indore", "commodity": "Wheat", "modal_price": 2500, "min_price": 2350, "max_price": 2700},
+    {"state": "Madhya Pradesh", "district": "Indore", "market": "Indore", "commodity": "Soyabean", "modal_price": 4350, "min_price": 4100, "max_price": 4550},
+    {"state": "Madhya Pradesh", "district": "Indore", "market": "Indore", "commodity": "Onion", "modal_price": 1600, "min_price": 1000, "max_price": 2100},
+    {"state": "Uttar Pradesh", "district": "Agra", "market": "Agra", "commodity": "Potato", "modal_price": 1200, "min_price": 1000, "max_price": 1400},
+    {"state": "Uttar Pradesh", "district": "Lucknow", "market": "Lucknow", "commodity": "Wheat", "modal_price": 2450, "min_price": 2350, "max_price": 2550},
+    {"state": "Punjab", "district": "Ludhiana", "market": "Khanna", "commodity": "Paddy(Dhan)(Common)", "modal_price": 2300, "min_price": 2250, "max_price": 2350},
+    {"state": "Rajasthan", "district": "Jaipur", "market": "Jaipur", "commodity": "Onion", "modal_price": 1700, "min_price": 1200, "max_price": 2200}
+  ]
+}
