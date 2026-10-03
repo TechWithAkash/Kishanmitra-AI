@@ -1,0 +1,141 @@
+text,intent,lang
+my tomato leaves are turning yellow what should i do,crop_disease,en
+there are black spots on my potato leaves,crop_disease,en
+insects are eating my cotton crop,crop_disease,en
+my onion plants are drying,crop_disease,en
+which medicine to spray on chilli for leaf curl,crop_disease,en
+white flies on my tomato plants,crop_disease,en
+wheat leaves have yellow rust,crop_disease,en
+how to control pests in soybean,crop_disease,en
+my paddy crop has brown spots,crop_disease,en
+the plant is wilting and dying,crop_disease,en
+fruits are rotting on the plant,crop_disease,en
+which pesticide is good for caterpillar,crop_disease,en
+mera tamatar ka paudha peela ho raha hai kya karu,crop_disease,hi-roman
+tamatar ke patte peele ho rahe hai,crop_disease,hi-roman
+aloo ke patton par kale dhabbe hai,crop_disease,hi-roman
+kapas me keede lag gaye hai,crop_disease,hi-roman
+pyaj ki fasal sookh rahi hai,crop_disease,hi-roman
+mirchi ke patte mud rahe hai kaunsi dawai dale,crop_disease,hi-roman
+gehu me peela pan aa gaya hai,crop_disease,hi-roman
+soybean me illi lag gayi hai kya kare,crop_disease,hi-roman
+dhan me rog lag gaya hai,crop_disease,hi-roman
+paudha murjha raha hai,crop_disease,hi-roman
+fasal me kida lag gaya kaunsa spray kare,crop_disease,hi-roman
+tamatar sad raha hai,crop_disease,hi-roman
+मेरे टमाटर के पत्ते पीले हो रहे हैं क्या करूं,crop_disease,hi
+आलू के पत्तों पर काले धब्बे हैं,crop_disease,hi
+कपास में कीड़े लग गए हैं,crop_disease,hi
+प्याज की फसल सूख रही है,crop_disease,hi
+मिर्च के पत्ते मुड़ रहे हैं कौन सी दवा डालें,crop_disease,hi
+गेहूं में पीलापन आ गया है,crop_disease,hi
+सोयाबीन में इल्ली लग गई है क्या करें,crop_disease,hi
+धान में रोग लग गया है,crop_disease,hi
+पौधा मुरझा रहा है,crop_disease,hi
+फसल में कीट लग गया कौन सा स्प्रे करें,crop_disease,hi
+माझ्या टोमॅटोची पाने पिवळी पडत आहेत काय करू,crop_disease,mr
+बटाट्याच्या पानांवर काळे ठिपके आहेत,crop_disease,mr
+कापसावर कीड पडली आहे,crop_disease,mr
+कांद्याचे पीक सुकत आहे,crop_disease,mr
+मिरचीची पाने वाकडी होत आहेत कोणते औषध फवारू,crop_disease,mr
+गव्हाची पाने पिवळी झाली आहेत,crop_disease,mr
+सोयाबीनवर अळी आली आहे काय करावे,crop_disease,mr
+भातावर रोग पडला आहे,crop_disease,mr
+झाड कोमेजत आहे,crop_disease,mr
+पिकावर कोणती फवारणी करावी,crop_disease,mr
+what is the price of onion in pune,market_price,en
+today wheat rate in indore mandi,market_price,en
+tomato market price today,market_price,en
+how much is cotton selling for,market_price,en
+potato rate in agra market,market_price,en
+current soybean price in latur,market_price,en
+what is the mandi rate for chilli,market_price,en
+selling price of paddy today,market_price,en
+onion price,market_price,en
+best rate for my crop in nashik market,market_price,en
+pune me pyaj ka bhav kya hai,market_price,hi-roman
+aaj gehu ka rate kya hai,market_price,hi-roman
+tamatar ka mandi bhav batao,market_price,hi-roman
+kapas kitne me bik raha hai,market_price,hi-roman
+aloo ka bhav kya chal raha hai,market_price,hi-roman
+soybean ka rate batao indore mandi me,market_price,hi-roman
+mirchi ka daam kya hai,market_price,hi-roman
+dhan ka bhav,market_price,hi-roman
+pyaj ka rate,market_price,hi-roman
+mandi me aaj kya bhav hai,market_price,hi-roman
+पुणे में प्याज का भाव क्या है,market_price,hi
+आज गेहूं का रेट क्या है,market_price,hi
+टमाटर का मंडी भाव बताओ,market_price,hi
+कपास कितने में बिक रहा है,market_price,hi
+आलू का भाव क्या चल रहा है,market_price,hi
+सोयाबीन का रेट बताओ इंदौर मंडी में,market_price,hi
+मिर्च का दाम क्या है,market_price,hi
+धान का भाव,market_price,hi
+मंडी में आज क्या भाव है,market_price,hi
+नाशिक मध्ये कांद्याचा भाव काय आहे,market_price,mr
+आज गव्हाचा दर काय आहे,market_price,mr
+टोमॅटोचा बाजार भाव सांगा,market_price,mr
+कापूस किती रुपयाला विकला जात आहे,market_price,mr
+बटाट्याचा भाव काय आहे,market_price,mr
+लातूर बाजारात सोयाबीनचा दर,market_price,mr
+मिरचीचा भाव किती आहे,market_price,mr
+कांद्याचा दर,market_price,mr
+बाजार समितीत आजचा भाव काय,market_price,mr
+will it rain in nashik this week,weather,en
+weather forecast for pune,weather,en
+what is the temperature today,weather,en
+is rain expected tomorrow,weather,en
+how is the weather in indore,weather,en
+should i spray today or will it rain,weather,en
+weather report for my village,weather,en
+is it going to be very hot this week,weather,en
+next three days weather,weather,en
+kya kal baarish hogi,weather,hi-roman
+indore me mausam kaisa rahega,weather,hi-roman
+is hafte barish hogi kya,weather,hi-roman
+aaj ka tapman kitna hai,weather,hi-roman
+mausam ki jankari do,weather,hi-roman
+pune me agle do din barsaat hogi kya,weather,hi-roman
+kal dhoop rahegi ya baadal,weather,hi-roman
+mausam kaisa hai aaj,weather,hi-roman
+क्या कल बारिश होगी,weather,hi
+इंदौर में मौसम कैसा रहेगा,weather,hi
+इस हफ्ते बारिश होगी क्या,weather,hi
+आज का तापमान कितना है,weather,hi
+मौसम की जानकारी दो,weather,hi
+इंदौर में अगले दो दिन बारिश होगी क्या,weather,hi
+कल धूप रहेगी या बादल,weather,hi
+उद्या पाऊस पडेल का,weather,mr
+पुण्यात हवामान कसे आहे,weather,mr
+या आठवड्यात पाऊस येईल का,weather,mr
+आजचे तापमान किती आहे,weather,mr
+हवामानाचा अंदाज सांगा,weather,mr
+नाशिकमध्ये पुढील दोन दिवस पाऊस पडेल का,weather,mr
+उद्या ऊन असेल की ढगाळ,weather,mr
+hello,general,en
+hi there,general,en
+thank you,general,en
+who are you,general,en
+what can you do,general,en
+help me,general,en
+good morning,general,en
+tell me about pm kisan scheme,general,en
+namaste,general,hi-roman
+dhanyavad,general,hi-roman
+tum kaun ho,general,hi-roman
+tum kya kar sakte ho,general,hi-roman
+meri madad karo,general,hi-roman
+shukriya bhai,general,hi-roman
+pm kisan yojana ke bare me batao,general,hi-roman
+नमस्ते,general,hi
+धन्यवाद,general,hi
+तुम कौन हो,general,hi
+तुम क्या कर सकते हो,general,hi
+मेरी मदद करो,general,hi
+पीएम किसान योजना के बारे में बताओ,general,hi
+नमस्कार,general,mr
+आभारी आहे,general,mr
+तुम्ही कोण आहात,general,mr
+तुम्ही काय करू शकता,general,mr
+मला मदत करा,general,mr
+पीएम किसान योजनेबद्दल सांगा,general,mr
