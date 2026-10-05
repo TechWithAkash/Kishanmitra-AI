@@ -22,3 +22,4 @@ All notable changes to KisanMitra AI are documented here.
 - [2026-10-05 14:15] docs(plan): annotate IndicBERT comparison benchmark methodology
 - [2026-10-05 15:37] perf(web): lazy load camera stream until modal activation
 - [2026-10-05 15:40] fix(web): sanitize empty transcript submissions in voice loop
+- [2026-10-05 16:07] style(web): polish active chat item indicator in sidebar
