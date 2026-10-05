@@ -119,6 +119,14 @@ def test_follow_up_keeps_the_previous_topic():
     assert r.intent == "market_price" and r.entities["crop"] == "onion" and r.details["follow_up"] is True
 
 
+def test_follow_up_survives_a_confident_but_wrong_reclassification(monkeypatch):
+    # The translate-and-retry step may read "And in Pune?" as some other topic with high confidence.
+    monkeypatch.setattr(pipeline, "translate", lambda text, target, source="en", romanize=False: "And in Pune?" if target == "en" else text)
+    monkeypatch.setattr(pipeline, "predict_intent", lambda t: ("general", 0.30) if t == "aur pune me?" else ("crop_disease", 0.9))
+    r = pipeline.respond("aur pune me?", context={"intent": "market_price", "crop": "onion"})
+    assert r.intent == "market_price" and r.details["follow_up"] is True
+
+
 def test_follow_up_is_not_applied_to_a_clear_new_question():
     r = pipeline.respond("will it rain in Pune tomorrow?", context={"intent": "market_price", "crop": "onion"})
     assert r.intent == "weather" and "follow_up" not in r.details

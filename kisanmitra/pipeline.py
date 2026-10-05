@@ -205,6 +205,7 @@ def respond(
     nlu_text = text if detected.lang in NLU_LANGS else translate(text, "en", source="auto")
 
     intent, conf = predict_intent(nlu_text)
+    first_intent, first_conf = intent, conf  # before any retry: how clear was the question as asked?
     ents = extract_entities(nlu_text)
     details: dict = {"nlu_text": nlu_text}
     texts = [nlu_text]
@@ -229,8 +230,8 @@ def respond(
     # Follow-up questions: "aur Pune me?" after a price question means "and the price in Pune?".
     ctx = context or {}
     is_short = _word_count(nlu_text) <= FOLLOW_UP_MAX_WORDS
-    if ctx.get("intent") in FOLLOW_UP_INTENTS and is_short and (intent == "general" or conf < FOLLOW_UP_CONFIDENCE) \
-            and (ents.location or ents.crop):
+    unclear = first_intent == "general" or first_conf < FOLLOW_UP_CONFIDENCE
+    if ctx.get("intent") in FOLLOW_UP_INTENTS and is_short and unclear and (ents.location or ents.crop):
         intent = ctx["intent"]
         details["follow_up"] = True
     if intent == "market_price" and not ents.crop and ctx.get("crop") and ctx.get("intent") == "market_price":

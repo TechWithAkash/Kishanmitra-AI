@@ -36,3 +36,4 @@ All notable changes to KisanMitra AI are documented here.
 - [2026-10-05 23:18] chore(release): bump version to 1.0.0 and prepare production release
 - [2026-10-05 23:55] refactor(intent): tune TF-IDF char n-gram bounds to 2-5 for Romanized Hindi
 - [2026-10-06 00:18] perf(langid): optimize Devanagari Unicode codepoint range scanning
+- [2026-10-06 00:27] fix(entities): improve regex boundary matching for inflected Marathi nouns
