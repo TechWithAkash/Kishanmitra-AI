@@ -31,3 +31,4 @@ All notable changes to KisanMitra AI are documented here.
 - [2026-10-05 21:01] fix(web): ensure theme preference persists across page reloads
 - [2026-10-05 21:37] style(web): improve responsive layout on mobile screen widths
 - [2026-10-05 21:38] perf(entities): sort dictionary patterns by length descending to match compound terms
+- [2026-10-05 21:55] docs(changelog): document release notes and feature timeline
