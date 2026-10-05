@@ -82,7 +82,11 @@ async def guard(request: Request, call_next):
     response.headers["X-Content-Type-Options"] = "nosniff"
     if path.startswith("/api/"):
         response.headers["Cache-Control"] = "no-store"
-    log.info("%s %s %s %.0fms rid=%s", request.method, path, response.status_code, (time.perf_counter() - started) * 1000, rid)
+    log.info(
+        "%s %s %s %.0fms ip=%s rid=%s",
+        request.method, path, response.status_code, (time.perf_counter() - started) * 1000,
+        client_ip(request, settings.trust_proxy), rid,
+    )
     return response
 
 

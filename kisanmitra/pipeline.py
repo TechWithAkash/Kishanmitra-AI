@@ -9,7 +9,7 @@ from kisanmitra import LANG_NAMES, advice, mandi, places, weather
 from kisanmitra.entities import Entities, crops, extract_entities, known_words
 from kisanmitra.intent import predict_intent
 from kisanmitra.langid import detect_language
-from kisanmitra.translate import translate
+from kisanmitra.translate import translate, translate_ex
 
 NLU_LANGS = {"hi", "mr", "en"}  # languages the intent model / keyword lists are trained on
 LOW_CONFIDENCE = 0.45
@@ -103,20 +103,23 @@ def _weather(ents: Entities, place: places.Place | None, details: dict) -> str:
         return f"I could not find the place {place.name}. Please try the nearest town, or use your current location."
     try:
         fc = weather.forecast(located.lat, located.lon)
-    except (requests.RequestException, KeyError, ValueError) as exc:
-        details["weather_error"] = str(exc)
+    except (weather.WeatherError, requests.RequestException, KeyError, ValueError):
+        details["weather_error"] = True  # the cause is in the server log (never sent to the browser)
         return "The weather service is not reachable right now. Please try again in a few minutes."
     days = fc.days
     label = located.label()
     details["weather"] = {
         "place": label,
+        "source": fc.source,
+        "station": fc.station,
         "current": fc.current.__dict__ if fc.current else None,
         "days": [d.__dict__ for d in days],
     }
     lines = [f"Weather for {label}:"]
     if fc.current:
         c = fc.current
-        lines.append(f"Now: {c.temp:.0f} degrees C, {c.description.lower()}, humidity {c.humidity}%, wind {c.wind_kmh:.0f} km/h")
+        feels = f" (feels like {c.feels_like:.0f})" if c.feels_like is not None and abs(c.feels_like - c.temp) >= 2 else ""
+        lines.append(f"Now: {c.temp:.0f} degrees C{feels}, {c.description.lower()}, humidity {c.humidity}%, wind {c.wind_kmh:.0f} km/h")
     lines.append(f"Next {len(days)} days:")
     for d in days:
         lines.append(
@@ -247,7 +250,11 @@ def respond(
     handler = HANDLERS.get(intent)
     english = handler(ents, resolved, details) if handler else _general(nlu_text)
 
-    reply = english if lang == "en" else translate(english, lang, romanize=(script == "latin"))
+    reply = english
+    if lang != "en":
+        reply, translated = translate_ex(english, lang, romanize=(script == "latin"))
+        if not translated:  # every free translation service failed: the farmer gets English, and the UI says why
+            details["translation_failed"] = True
     spoken = None
     if voice:  # speech engines pronounce native script best, so never romanize here
         short = details.get("speech", english)

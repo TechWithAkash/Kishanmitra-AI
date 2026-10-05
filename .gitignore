@@ -11,3 +11,9 @@ wheels/
 
 # Secrets
 .env
+
+# Secrets and runtime data
+.env
+.cache/
+.pytest_cache/
+.DS_Store

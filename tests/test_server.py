@@ -15,6 +15,7 @@ client = TestClient(server.app)
 @pytest.fixture(autouse=True)
 def offline(monkeypatch):
     monkeypatch.setattr(pipeline, "translate", lambda text, target, source="en", romanize=False: f"[{target}] {text}")
+    monkeypatch.setattr(pipeline, "translate_ex", lambda text, target, source="en", romanize=False: (f"[{target}] {text}", True))
     monkeypatch.setattr(places, "search", lambda q, limit=6, language="en": [places.Place(q, 20.0, 73.8, "Maharashtra", q, "search")])
     monkeypatch.setattr(weather, "forecast", lambda lat, lon, days=5: make_forecast())
     monkeypatch.setattr(speech, "speak", lambda text, lang: b"MP3DATA")

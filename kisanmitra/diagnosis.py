@@ -7,7 +7,7 @@ from functools import lru_cache
 from kisanmitra import DATA_DIR, vision
 from kisanmitra.entities import Entities, crops, extract_entities
 from kisanmitra.pipeline import HELPLINE, Reply
-from kisanmitra.translate import translate
+from kisanmitra.translate import translate_ex
 
 CONFIDENT = 0.75   # at or above (and clearly ahead of the runner-up): report as the diagnosis
 MARGIN = 0.30      # lead over the 2nd guess needed to call it confident
@@ -67,11 +67,11 @@ def diagnose(
     if crop and crop not in vision.supported_crops():
         name = crops().get(crop, {}).get("en", crop)
         english = _unsupported_crop_message(name)
-        reply_text = english if lang == "en" else translate(english, lang)
+        reply_text, translated = translate_ex(english, lang)
         return Reply(
             text=reply_text, english=english, lang=lang, script="native", intent="crop_image", confidence=0.0,
             entities=asdict(Entities(crop=crop, location=location)),
-            details={"vision": {"status": "unsupported", "predictions": []}},
+            details={"vision": {"status": "unsupported", "predictions": []}, **({} if translated else {"translation_failed": True})},
         )
 
     preds = vision.classify(image_bytes, top_k=3, crop=crop)
@@ -99,7 +99,9 @@ def diagnose(
             ],
         }
     }
-    reply_text = english if lang == "en" else translate(english, lang)
+    reply_text, translated = translate_ex(english, lang)
+    if not translated:
+        details["translation_failed"] = True
     return Reply(
         text=reply_text,
         english=english,

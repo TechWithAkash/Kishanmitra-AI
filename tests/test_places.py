@@ -78,3 +78,22 @@ def test_known_words_are_not_sent_to_the_geocoder(monkeypatch):
 def test_agmarknet_state_spelling():
     assert places.Place("Delhi", state="Delhi").mandi_state == "NCT of Delhi"
     assert places.Place("Pune", state="Maharashtra").mandi_state == "Maharashtra"
+
+
+@pytest.mark.parametrize("text, word, expected", [
+    ("will it rain in Satana tomorrow", "Satana", True),
+    ("Satana ka mausam kaisa hai", "Satana", True),
+    ("weather Satana", "Satana", True),
+    ("Satana", "Satana", True),
+    ("tell me how hot the dawn feels today please", "dawn", False),
+    ("mausam ki jankari do aaj kitni Satana", "Satana", False),
+])
+def test_a_place_must_be_introduced_like_one(text, word, expected):
+    assert places.has_place_cue(text, word) is expected
+
+
+def test_words_that_are_also_village_names_are_never_looked_up(monkeypatch):
+    called = []
+    monkeypatch.setattr(places, "search", lambda q, limit=6, language="en": called.append(q) or [])
+    places.guess_from_text("garmi me kya karu in garmi", ignore=set())
+    assert called == []

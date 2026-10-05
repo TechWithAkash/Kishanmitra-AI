@@ -131,7 +131,7 @@ export default function Home() {
       const chatId = addMessage(activeIdRef.current, makeMessage({ role: "user", text: transcript, voice: true }));
       activeIdRef.current = chatId;
       addMessage(chatId, makeMessage({ role: "assistant", text: reply.text, reply, audioB64: audio_b64 }));
-      return { transcript, text: reply.text, audioB64: audio_b64, lang: reply.lang };
+      return { transcript, text: reply.text, spoken: reply.spoken ?? null, audioB64: audio_b64, lang: reply.lang };
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Voice request failed");
       return null;

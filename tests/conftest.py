@@ -8,8 +8,15 @@ from kisanmitra.config import settings
 
 @pytest.fixture(autouse=True)
 def isolated(tmp_path, monkeypatch):
+    # The developer's real .env keys must never be used by tests.
+    monkeypatch.delenv("OPENWEATHER_API_KEY", raising=False)
+    monkeypatch.delenv("DATA_GOV_API_KEY", raising=False)
     # A temporary cache directory, so tests never read or write the real mandi cache.
     monkeypatch.setattr(mandi, "settings", type("S", (), {"cache_dir": tmp_path})())
+    from kisanmitra import translate as tr
+    monkeypatch.setattr(tr, "settings", type("S", (), {"cache_dir": tmp_path, "contact": "test"})())
+    monkeypatch.setattr(tr, "_disk", None)
+    tr._cache.clear()
     # Any test that forgets to mock the network fails loudly instead of calling a real API.
     def no_network(*a, **k):
         raise AssertionError("test tried to use the real network")

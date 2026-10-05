@@ -1,0 +1,42 @@
+# One command to run everything:  docker compose up --build   →  http://localhost:3000
+# The API is only reachable from the web container (not published to the host).
+# For real users put an HTTPS reverse proxy in front (see README): GPS location and the
+# microphone/camera only work on https:// pages (or localhost).
+services:
+  api:
+    build: .
+    restart: unless-stopped
+    environment:
+      OPENWEATHER_API_KEY: ${OPENWEATHER_API_KEY:-}
+      DATA_GOV_API_KEY: ${DATA_GOV_API_KEY:-}
+      WHISPER_MODEL: ${WHISPER_MODEL:-small}
+      KISANMITRA_LOG_LEVEL: ${KISANMITRA_LOG_LEVEL:-INFO}
+      KISANMITRA_RATE_LIMIT: ${KISANMITRA_RATE_LIMIT:-120}
+      KISANMITRA_HEAVY_RATE_LIMIT: ${KISANMITRA_HEAVY_RATE_LIMIT:-30}
+      KISANMITRA_CONTACT: ${KISANMITRA_CONTACT:-academic project}
+      KISANMITRA_ALLOW_MYMEMORY: ${KISANMITRA_ALLOW_MYMEMORY:-0}
+    volumes:
+      - models:/models   # downloaded Whisper + plant-disease models (~600 MB, once)
+      - data:/data       # saved mandi prices
+    healthcheck:
+      test: ["CMD", "python", "-c", "import sys,urllib.request; sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:8000/api/health', timeout=4).status == 200 else 1)"]
+      interval: 30s
+      timeout: 5s
+      start_period: 90s
+      retries: 3
+
+  web:
+    build:
+      context: ./web
+      args:
+        API_URL: http://api:8000
+    restart: unless-stopped
+    ports:
+      - "${WEB_PORT:-3000}:3000"
+    depends_on:
+      api:
+        condition: service_healthy
+
+volumes:
+  models:
+  data:

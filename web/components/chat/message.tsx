@@ -11,6 +11,7 @@ import { BlurFade } from "@/components/ui/blur-fade";
 import { Lens } from "@/components/ui/lens";
 import { tts } from "@/lib/api";
 import { play, type Playback } from "@/lib/audio";
+import { speakWithBrowser } from "@/lib/browser-voice";
 import { cn } from "@/lib/utils";
 import type { BotReply, Message } from "@/lib/types";
 import { DiagnosisCard } from "./diagnosis-card";
@@ -35,14 +36,30 @@ function ListenButton({ message }: { message: Message }) {
       // Romanized replies sound wrong in a speech engine, so speak the English
       // answer translated into the native script instead.
       const romanized = reply!.script === "latin" && reply!.lang !== "en";
-      const blob = romanized ? await tts(reply!.english, reply!.lang, true) : await tts(reply!.text, reply!.lang);
-      const url = URL.createObjectURL(blob);
-      playback.current = play(url);
-      setState("playing");
-      await playback.current.done;
-      URL.revokeObjectURL(url);
-    } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Could not play audio");
+      let url: string | null = null;
+      try {
+        const blob = romanized ? await tts(reply!.english, reply!.lang, true) : await tts(reply!.text, reply!.lang);
+        url = URL.createObjectURL(blob);
+        const server = play(url);
+        if (await server.started) {
+          playback.current = server;
+          setState("playing");
+          await server.done;
+          return;
+        }
+      } catch {
+        // the server voice is unavailable: use the device's own voice below
+      } finally {
+        if (url) URL.revokeObjectURL(url);
+      }
+      const local = romanized ? speakWithBrowser(reply!.english, "en") : speakWithBrowser(reply!.text, reply!.lang);
+      if (await local.started) {
+        playback.current = local;
+        setState("playing");
+        await local.done;
+      } else {
+        toast.error("Could not play the voice. This device has no voice for this language.");
+      }
     } finally {
       setState("idle");
     }
@@ -133,6 +150,11 @@ export function MessageView({
         >
           {message.text}
         </p>
+        {reply?.details.translation_failed && (
+          <p className="text-xs text-muted-foreground">
+            Translation is temporarily unavailable, so this answer is in English. Please try again in a minute.
+          </p>
+        )}
         {reply?.details.needs_location && (
           <Button variant="outline" className="w-fit gap-2 rounded-full" onClick={onUseLocation}>
             <LocateFixed className="text-primary" /> Use my current location

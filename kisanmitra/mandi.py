@@ -18,7 +18,7 @@ from dataclasses import dataclass, field
 import requests
 
 from kisanmitra import DATA_DIR
-from kisanmitra.config import settings
+from kisanmitra.config import redact, settings
 
 log = logging.getLogger("kisanmitra.mandi")
 
@@ -127,7 +127,7 @@ def get_prices(commodity: str, district: str | None = None, state: str | None = 
         if records:
             _cache_save(commodity, state_for_cache, records)
     except (requests.RequestException, ValueError) as exc:
-        error = f"{type(exc).__name__}: {exc}"
+        error = redact(f"{type(exc).__name__}: {exc}")  # the URL in the message contains the API key
         log.warning("mandi API failed: %s", error)
         saved = _cache_get(commodity, state)
         if saved:

@@ -7,6 +7,8 @@ All free, no API key:
     so calls are serialised and cached.
 """
 
+import logging
+import os
 import re
 import threading
 import time
@@ -16,11 +18,12 @@ from functools import lru_cache
 
 import requests
 
-from kisanmitra.config import settings
+from kisanmitra.config import redact, settings
 
 GEOCODE_URL = "https://geocoding-api.open-meteo.com/v1/search"
 REVERSE_URL = "https://nominatim.openstreetmap.org/reverse"
 TIMEOUT = 8
+log = logging.getLogger("kisanmitra.places")
 
 # Agmarknet (mandi price data) spells a few states differently from OpenStreetMap.
 AGMARKNET_STATES = {
@@ -41,7 +44,22 @@ NOT_PLACES = {
     "village", "district", "city", "town", "near", "nearby", "around", "here", "morning", "evening", "night",
     "hello", "thanks", "thank", "help", "need", "want", "know", "give", "check", "latest", "current", "right",
     "mausam", "barish", "baarish", "bhav", "daam", "kitna", "kitne", "batao", "aaj", "kal", "agle",
+    # Hindi / Marathi weather and farming words that are ALSO real village names (e.g. a village called "Garmi")
+    "garmi", "sardi", "thand", "thandi", "dhoop", "dhup", "hawa", "paani", "pani", "paus", "paaus", "ushna",
+    "baadal", "badal", "toofan", "aandhi", "kohra", "bijli", "garaj", "barsaat", "barsat", "sukha", "sookha",
+    "fasal", "kheti", "khet", "kisan", "shetkari", "sheti", "tapman", "gehu", "chana", "dhan", "kapas", "pyaj",
 }
+
+# A place named in a sentence is introduced by "in/at/near ..." or followed by "me/mein/ka ...".
+_BEFORE = r"(?:in|at|near|nearby|around|for|of|from|to|within|weather|forecast|mausam|hawaman|rate|bhav|price)"
+_AFTER = r"(?:me|mein|main|mai|ka|ke|ki|madhye|madhe|chya|cha|chi|che|la|mandi|market)"
+SHORT_QUERY_WORDS = 3  # "Satana" or "weather Satana": nothing else it could mean
+
+
+def has_place_cue(text: str, word: str) -> bool:
+    w = re.escape(word)
+    return bool(re.search(rf"\b{_BEFORE}\s+(?:the\s+)?{w}\b|\b{w}\s+{_AFTER}\b", text, re.IGNORECASE)) \
+        or len(text.split()) <= SHORT_QUERY_WORDS
 
 
 @dataclass(frozen=True)
@@ -94,15 +112,46 @@ def _search(query: str, language: str, count: int) -> tuple[Place, ...]:
     return tuple(out)
 
 
+OPENWEATHER_GEO = "https://api.openweathermap.org/geo/1.0"
+
+
+def _owm_key() -> str:
+    return os.environ.get("OPENWEATHER_API_KEY", "").strip()
+
+
+@lru_cache(maxsize=512)
+def _owm_search(query: str, count: int) -> tuple[Place, ...]:
+    resp = requests.get(
+        f"{OPENWEATHER_GEO}/direct", params={"q": f"{query},IN", "limit": count, "appid": _owm_key()}, timeout=TIMEOUT
+    )
+    resp.raise_for_status()
+    seen: set[str] = set()
+    out: list[Place] = []
+    for r in resp.json():
+        p = Place(r["name"], r["lat"], r["lon"], r.get("state"), None, "search")
+        if p.label() not in seen:
+            seen.add(p.label())
+            out.append(p)
+    return tuple(out)
+
+
 def search(query: str, limit: int = 6, language: str = "en") -> list[Place]:
-    """Find places in India by (partial) name. Returns [] when the service is unreachable."""
+    """Find places in India by (partial) name. Tries Open-Meteo, then OpenWeather. [] if both fail."""
     query = query.strip()
     if len(query) < 2:
         return []
     try:
-        return list(_search(query, language, limit))
+        found = list(_search(query, language, limit))
+        if found:
+            return found
     except (requests.RequestException, ValueError, KeyError):
-        return []
+        pass
+    if _owm_key():  # second opinion: OpenWeather's geocoder
+        try:
+            return list(_owm_search(query, limit))
+        except (requests.RequestException, ValueError, KeyError, TypeError) as exc:
+            log.warning("OpenWeather geocoding failed: %s", redact(f"{type(exc).__name__}: {exc}"))
+    return []
 
 
 # ---------------------------------------------------------------- reverse (GPS)
@@ -149,11 +198,28 @@ def _reverse(lat: float, lon: float) -> Place | None:
     return Place(name, lat, lon, addr.get("state"), district, "gps")
 
 
+@lru_cache(maxsize=1024)
+def _owm_reverse(lat: float, lon: float) -> Place | None:
+    """Fallback when OpenStreetMap is unreachable: OpenWeather names the nearest town/taluka (no district)."""
+    if not _owm_key():
+        return None
+    try:
+        resp = requests.get(
+            f"{OPENWEATHER_GEO}/reverse", params={"lat": lat, "lon": lon, "limit": 1, "appid": _owm_key()}, timeout=TIMEOUT
+        )
+        resp.raise_for_status()
+        hit = (resp.json() or [None])[0]
+    except (requests.RequestException, ValueError) as exc:
+        log.warning("OpenWeather reverse geocoding failed: %s", redact(f"{type(exc).__name__}: {exc}"))
+        return None
+    return Place(hit["name"], lat, lon, hit.get("state"), None, "gps") if hit else None
+
+
 def reverse(lat: float, lon: float) -> Place:
     """GPS coordinates → the nearest village/town with its district and state."""
     if not (-90 <= lat <= 90 and -180 <= lon <= 180):
         raise ValueError("Invalid coordinates")
-    place = _reverse(round(lat, 3), round(lon, 3))
+    place = _reverse(round(lat, 3), round(lon, 3)) or _owm_reverse(round(lat, 3), round(lon, 3))
     # If the lookup service is unreachable we still keep the coordinates: weather needs only those.
     return replace(place, lat=lat, lon=lon) if place else Place(f"{lat:.2f}, {lon:.2f}", lat, lon, None, None, "gps")
 
@@ -181,11 +247,12 @@ def ensure_coordinates(place: Place) -> Place | None:
 def guess_from_text(text: str, ignore: set[str]) -> Place | None:
     """Find a village/town name in free text (e.g. 'will it rain in Satana tomorrow').
 
-    Each unfamiliar word is looked up; a place is accepted only if its name matches the word
-    exactly (accents ignored), so ordinary words are never mistaken for towns.
+    A word is looked up only if it is introduced like a place ("in Satana", "Satana ka mausam"),
+    and accepted only if a place has exactly that name (accents ignored). So ordinary words are
+    never mistaken for towns, even ones that happen to be village names too (e.g. "garmi").
     """
     words = re.findall(r"[A-Za-z]{4,}", text)
-    candidates = [w for w in words if w.lower() not in NOT_PLACES and w.lower() not in ignore]
+    candidates = [w for w in words if w.lower() not in NOT_PLACES and w.lower() not in ignore and has_place_cue(text, w)]
     for word in list(dict.fromkeys(candidates))[:4]:  # unique, in order, at most 4 lookups per question
         for hit in search(word, limit=5):
             if fold(hit.name) == fold(word):

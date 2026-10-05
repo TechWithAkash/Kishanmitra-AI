@@ -13,7 +13,7 @@ export const metadata: Metadata = {
   description: "Multilingual farming assistant: crop advice, mandi prices and weather, by text or voice.",
 };
 
-export const viewport: Viewport = { width: "device-width", initialScale: 1 };
+export const viewport: Viewport = { width: "device-width", initialScale: 1, themeColor: "#16a34a" };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (

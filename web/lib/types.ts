@@ -26,7 +26,14 @@ export type DayForecast = {
   description: string;
 };
 
-export type CurrentWeather = { temp: number; humidity: number; wind_kmh: number; code: number; description: string };
+export type CurrentWeather = {
+  temp: number;
+  humidity: number;
+  wind_kmh: number;
+  code: number;
+  description: string;
+  feels_like?: number | null;
+};
 
 /** Where the farmer is: from GPS, from search, or named in a question. */
 export type Place = {
@@ -56,10 +63,17 @@ export type Details = {
     records: MandiRecord[];
     fetched_at: number | null; // unix seconds
   };
-  weather?: { place: string; current: CurrentWeather | null; days: DayForecast[] };
+  weather?: {
+    place: string;
+    source: "openweather" | "open-meteo";
+    station: string | null;
+    current: CurrentWeather | null;
+    days: DayForecast[];
+  };
   place?: Place & { label: string };
   place_from?: "question" | "saved";
   needs_location?: boolean;
+  translation_failed?: boolean;
   follow_up?: boolean;
   advice_entry?: { crop: string; symptom: string; problem: string; advice: string } | null;
   heard?: Heard;
@@ -75,6 +89,8 @@ export type BotReply = {
   confidence: number;
   entities: Entities;
   details: Details;
+  /** Short version of the answer meant to be spoken (voice replies only). */
+  spoken?: string | null;
 };
 
 export type VoiceResult =

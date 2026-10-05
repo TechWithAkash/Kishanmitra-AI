@@ -24,7 +24,7 @@ def fake_classify(*preds):
 
 @pytest.fixture(autouse=True)
 def offline(monkeypatch):
-    monkeypatch.setattr(diagnosis, "translate", lambda text, target, **k: f"[{target}] {text}")
+    monkeypatch.setattr(diagnosis, "translate_ex", lambda text, target, **k: (text if target == "en" else f"[{target}] {text}", True))
     monkeypatch.setattr(vision, "labels", lambda: {
         0: "Healthy Soybean Plant", 1: "Tomato with Early Blight", 2: "Healthy Tomato Plant",
         3: "Potato with Late Blight", 4: "Healthy Blueberry Plant",

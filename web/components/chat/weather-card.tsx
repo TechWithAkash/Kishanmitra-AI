@@ -42,7 +42,12 @@ export function WeatherCard({ weather, lang }: { weather: NonNullable<BotReply["
             <now.Icon className={`size-12 shrink-0 ${now.color}`} aria-hidden />
             <div>
               <div className="text-4xl leading-none font-semibold tabular-nums">{Math.round(current.temp)}°C</div>
-              <div className="mt-1 text-sm text-muted-foreground">{current.description}</div>
+              <div className="mt-1 text-sm text-muted-foreground">
+                {current.description}
+                {current.feels_like != null && Math.abs(current.feels_like - current.temp) >= 2 && (
+                  <span> · feels like {Math.round(current.feels_like)}°</span>
+                )}
+              </div>
             </div>
             <dl className="ml-auto flex flex-col gap-1 text-sm text-muted-foreground">
               <div className="flex items-center gap-1.5">
@@ -80,6 +85,18 @@ export function WeatherCard({ weather, lang }: { weather: NonNullable<BotReply["
             );
           })}
         </div>
+
+        <p className="text-xs text-muted-foreground">
+          Weather data:{" "}
+          {weather.source === "openweather" ? (
+            <a href="https://openweathermap.org" target="_blank" rel="noreferrer" className="underline underline-offset-2">
+              OpenWeather
+            </a>
+          ) : (
+            "Open-Meteo"
+          )}
+          {weather.station && weather.source === "openweather" && <span> · nearest station: {weather.station}</span>}
+        </p>
       </CardContent>
     </Card>
   );

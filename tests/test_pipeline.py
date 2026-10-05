@@ -9,7 +9,9 @@ from tests.conftest import NASHIK, make_forecast
 
 @pytest.fixture(autouse=True)
 def offline(monkeypatch):
-    monkeypatch.setattr(pipeline, "translate", lambda text, target, source="en", romanize=False: f"[{target}{'-rm' if romanize else ''}] {text}")
+    tag = lambda target, romanize: f"[{target}{'-rm' if romanize else ''}]"
+    monkeypatch.setattr(pipeline, "translate", lambda text, target, source="en", romanize=False: f"{tag(target, romanize)} {text}")
+    monkeypatch.setattr(pipeline, "translate_ex", lambda text, target, source="en", romanize=False: (f"{tag(target, romanize)} {text}", True))
     monkeypatch.setattr(places, "search", lambda q, limit=6, language="en": [places.Place(q, 20.0, 73.8, "Maharashtra", q, "search")])
     monkeypatch.setattr(weather, "forecast", lambda lat, lon, days=5: make_forecast())
 
@@ -139,3 +141,16 @@ def test_missing_slots_ask_follow_up():
 def test_english_reply_not_translated():
     r = pipeline.respond("What can you do?")
     assert r.text == r.english
+
+
+def test_a_failed_translation_is_flagged_and_english_is_returned(monkeypatch):
+    monkeypatch.setattr(pipeline, "translate_ex", lambda text, target, source="en", romanize=False: (text, False))
+    r = pipeline.respond("mera tamatar ka paudha peela ho raha hai", place=None)
+    assert r.details["translation_failed"] is True and r.text == r.english
+
+
+def test_ordinary_weather_words_are_never_taken_for_villages(monkeypatch):
+    # there really is a village called "Garmi": it must not hijack "how hot is it"
+    monkeypatch.setattr(places, "search", lambda q, limit=6, language="en": [places.Place("Garmi", 21.1, 79.0, "Maharashtra", "Nagpur")])
+    r = pipeline.respond("aaj kitni garmi hai? kal baarish hogi kya?", place=NASHIK)
+    assert r.details["place"]["name"] == "Nashik" and r.details["place_from"] == "saved"

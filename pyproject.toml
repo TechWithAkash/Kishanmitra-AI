@@ -6,22 +6,24 @@ readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
     "av>=11,<16",
+    "edge-tts>=7.2.8",
     "fastapi>=0.142.2",
     "faster-whisper>=1.2.1",
     "gtts>=2.5.4",
     "numpy>=2.5.3",
     "onnxruntime>=1.30.0",
     "pillow>=12.3.0",
+    "python-dotenv>=1.2.4",
     "python-multipart>=0.0.32",
     "requests>=2.34.2",
     "scikit-learn>=1.9.1",
     "speechrecognition>=3.17.0",
-    "streamlit>=1.65.0",
     "uvicorn[standard]>=0.54.0",
 ]
 
 [dependency-groups]
 dev = [
+    "httpx>=0.28.1",
     "pytest>=9.1.1",
 ]
 

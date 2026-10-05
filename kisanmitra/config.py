@@ -1,8 +1,34 @@
 """Runtime settings, all overridable with environment variables (see .env.example)."""
 
 import os
+import re
 from dataclasses import dataclass
 from pathlib import Path
+
+ROOT = Path(__file__).resolve().parent.parent
+
+
+def load_env(path: Path = ROOT / ".env") -> None:
+    """Load KEY=value lines from the project's .env file. Variables already set in the real environment win."""
+    from dotenv import load_dotenv
+
+    load_dotenv(path, override=False)
+
+
+load_env()  # must run before the settings below (and before any module reads an API key)
+
+SECRET_VARS = ("OPENWEATHER_API_KEY", "DATA_GOV_API_KEY")
+_SECRET_PARAMS = re.compile(r"(appid|api-key|apikey|key|token)=[^&\s'\"]+", re.IGNORECASE)
+
+
+def redact(text: str) -> str:
+    """Remove API keys from text. Error messages from the `requests` library include the full URL,
+    query string and all, so anything that is logged or sent to a browser must pass through this."""
+    for name in SECRET_VARS:
+        value = os.environ.get(name, "").strip()
+        if len(value) >= 8:
+            text = text.replace(value, "***")
+    return _SECRET_PARAMS.sub(lambda m: f"{m.group(1)}=***", text)
 
 
 def _int(name: str, default: int) -> int:
@@ -26,11 +52,13 @@ class Settings:
     max_text_chars: int
     trust_proxy: bool                # read the client IP from X-Forwarded-For (API sits behind the web proxy)
     log_level: str
+    tts_rate: str                    # speaking speed of the neural voice, e.g. "-8%" (a little slower = clearer)
+    allow_mymemory: bool             # use MyMemory when Google Translate fails (its quality is poor: off by default)
     contact: str                     # sent in the User-Agent of free public APIs (OpenStreetMap asks for this)
 
 
 def load_settings() -> Settings:
-    root = Path(__file__).resolve().parent.parent
+    root = ROOT
     origins = os.environ.get("KISANMITRA_CORS_ORIGINS", "")
     return Settings(
         cache_dir=Path(os.environ.get("KISANMITRA_CACHE_DIR", root / ".cache")),
@@ -41,6 +69,8 @@ def load_settings() -> Settings:
         max_text_chars=_int("KISANMITRA_MAX_TEXT_CHARS", 1000),
         trust_proxy=_flag("KISANMITRA_TRUST_PROXY", True),
         log_level=os.environ.get("KISANMITRA_LOG_LEVEL", "INFO").upper(),
+        tts_rate=os.environ.get("KISANMITRA_TTS_RATE", "-8%"),
+        allow_mymemory=_flag("KISANMITRA_ALLOW_MYMEMORY", False),
         contact=os.environ.get("KISANMITRA_CONTACT", "academic project"),
     )
 

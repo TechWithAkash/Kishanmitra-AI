@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Mic, MicOff, X } from "lucide-react";
+import { Mic, MicOff, Volume2, VolumeX, X } from "lucide-react";
 import { AnimatePresence, motion, useMotionValue } from "motion/react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
@@ -14,13 +14,21 @@ import { ShimmerButton } from "@/components/ui/shimmer-button";
 import { TextAnimate } from "@/components/ui/text-animate";
 import { useLatest } from "@/hooks/use-latest";
 import { useRecorder } from "@/hooks/use-recorder";
-import { play, type Playback } from "@/lib/audio";
+import { type Playback } from "@/lib/audio";
+import { speakReply, type SpokenVia } from "@/lib/speak-reply";
 import { languageName } from "@/lib/languages";
 import { cn } from "@/lib/utils";
 import { LevelBars } from "./level-bars";
 import { PHASE_STYLE, VoiceOrb, type VoicePhase } from "./voice-orb";
 
-export type VoiceTurn = { transcript: string; text: string; audioB64: string | null; lang: string };
+export type VoiceTurn = {
+  transcript: string;
+  text: string;
+  /** Short version meant for speaking (falls back to `text`). */
+  spoken: string | null;
+  audioB64: string | null;
+  lang: string;
+};
 
 const PHASE_TEXT: Record<VoicePhase, string> = {
   listening: "Listening…",
@@ -57,6 +65,8 @@ function VoiceSession({
   const level = useMotionValue(0);
   const [phase, setPhase] = useState<VoicePhase>("listening");
   const [caption, setCaption] = useState<{ user: string; bot: string; lang: string } | null>(null);
+  const [voiceVia, setVoiceVia] = useState<SpokenVia | null>(null); // how the last answer was spoken
+  const lastTurn = useRef<VoiceTurn | null>(null);
 
   const recorder = useRecorder({ onLevel: (v) => level.set(v) });
   const cancelRecording = recorder.cancel; // stable identity
@@ -100,10 +110,17 @@ function VoiceSession({
         if (!turn) continue;
 
         setCaption({ user: turn.transcript, bot: turn.text, lang: turn.lang });
-        if (turn.audioB64) {
-          setPhase("speaking");
-          playback.current = play(`data:audio/mpeg;base64,${turn.audioB64}`);
-          await playback.current.done;
+        lastTurn.current = turn;
+        setPhase("speaking");
+        const { via, playback: spoken } = await speakReply({
+          audioB64: turn.audioB64,
+          text: turn.spoken ?? turn.text,
+          lang: turn.lang,
+        });
+        setVoiceVia(via);
+        if (spoken) {
+          playback.current = spoken;
+          await spoken.done;
           playback.current = null;
         }
       }
@@ -143,6 +160,22 @@ function VoiceSession({
     if (phase === "listening") recorder.stop(); // "I'm done talking": send now
     else if (phase === "speaking") playback.current?.stop(); // skip the answer
     else if (phase === "paused") resumeListening();
+  }
+
+  /** Tapping the speaker counts as a user gesture, so browsers allow the sound. */
+  async function replay() {
+    const turn = lastTurn.current;
+    if (!turn) return;
+    playback.current?.stop();
+    const { via, playback: spoken } = await speakReply({ audioB64: turn.audioB64, text: turn.spoken ?? turn.text, lang: turn.lang });
+    setVoiceVia(via);
+    if (!spoken) {
+      toast.error("This device has no voice for this language. Please read the answer on the screen.");
+      return;
+    }
+    playback.current = spoken;
+    await spoken.done;
+    if (playback.current === spoken) playback.current = null;
   }
 
   function toggleMute() {
@@ -214,6 +247,15 @@ function VoiceSession({
                 {caption.bot.length > 240 ? `${caption.bot.slice(0, 240)}…` : caption.bot}
               </TextAnimate>
             </div>
+            {voiceVia === "none" && (
+              <p className="flex items-center gap-1.5 text-xs text-amber-600 dark:text-amber-400" role="alert">
+                <VolumeX className="size-3.5 shrink-0" />
+                Sound could not be played automatically. Tap the speaker to hear the answer.
+              </p>
+            )}
+            {voiceVia === "browser" && (
+              <p className="text-xs text-muted-foreground">Spoken with your device&apos;s voice.</p>
+            )}
           </>
         ) : (
           <BlurFade delay={0.25} className="flex flex-col items-center gap-2">
@@ -237,6 +279,11 @@ function VoiceSession({
         ) : (
           <Button variant="secondary" size="icon-lg" className="size-12 rounded-full" onClick={toggleMute} aria-label="Mute microphone">
             <MicOff />
+          </Button>
+        )}
+        {caption && (
+          <Button variant="secondary" size="icon-lg" className="size-12 rounded-full" onClick={() => void replay()} aria-label="Hear the answer again">
+            <Volume2 />
           </Button>
         )}
         <Button variant="destructive" className="h-12 rounded-full px-5" onClick={onClose} aria-label="End voice mode">
