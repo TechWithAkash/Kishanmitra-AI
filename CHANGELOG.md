@@ -11,3 +11,4 @@ All notable changes to KisanMitra AI are documented here.
 - [2026-10-05 09:31] feat(weather): add agricultural frost and heat stress advisory heuristics
 - [2026-10-05 10:36] refactor(advice): prioritize exact crop match before generic symptom advice
 - [2026-10-05 10:40] fix(web): preserve photo aspect ratio in composer preview thumbnail
+- [2026-10-05 11:54] docs(mvp): update demo script queries and validation checklist
