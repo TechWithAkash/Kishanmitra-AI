@@ -33,3 +33,4 @@ All notable changes to KisanMitra AI are documented here.
 - [2026-10-05 21:38] perf(entities): sort dictionary patterns by length descending to match compound terms
 - [2026-10-05 21:55] docs(changelog): document release notes and feature timeline
 - [2026-10-05 22:21] refactor(server): add detailed HTTP error messages for short audio inputs
+- [2026-10-05 23:18] chore(release): bump version to 1.0.0 and prepare production release
