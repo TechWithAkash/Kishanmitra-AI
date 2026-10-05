@@ -13,3 +13,4 @@ All notable changes to KisanMitra AI are documented here.
 - [2026-10-05 10:40] fix(web): preserve photo aspect ratio in composer preview thumbnail
 - [2026-10-05 11:54] docs(mvp): update demo script queries and validation checklist
 - [2026-10-05 12:29] perf(server): exclude internal speech prompt from JSON response payload
+- [2026-10-05 12:36] fix(web): handle clipboard image paste in chat input box
