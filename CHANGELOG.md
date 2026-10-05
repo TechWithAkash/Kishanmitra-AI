@@ -18,3 +18,4 @@ All notable changes to KisanMitra AI are documented here.
 - [2026-10-05 12:58] refactor(langid): add Romanized Marathi common marker vocabulary
 - [2026-10-05 13:10] test(diagnosis): test unsupported crop warning message
 - [2026-10-05 13:38] feat(web): support drag and drop image upload on chat window
+- [2026-10-05 13:41] refactor(speech): prioritize Hindi over Urdu for ambiguous Devanagari acoustics
