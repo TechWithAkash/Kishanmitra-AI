@@ -15,3 +15,4 @@ All notable changes to KisanMitra AI are documented here.
 - [2026-10-05 12:29] perf(server): exclude internal speech prompt from JSON response payload
 - [2026-10-05 12:36] fix(web): handle clipboard image paste in chat input box
 - [2026-10-05 12:42] style(web): polish tooltip delays and toast notifications
+- [2026-10-05 12:58] refactor(langid): add Romanized Marathi common marker vocabulary
