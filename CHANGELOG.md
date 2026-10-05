@@ -27,3 +27,4 @@ All notable changes to KisanMitra AI are documented here.
 - [2026-10-05 18:37] test(server): test health check endpoint whisper status
 - [2026-10-05 18:51] docs(readme): document PlantVillage dataset limitations and bias
 - [2026-10-05 19:15] feat(web): add confetti celebration on successful leaf diagnosis
+- [2026-10-05 20:07] refactor(vision): normalize image tensors to [-1, 1] range for MobileNet
