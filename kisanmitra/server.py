@@ -17,7 +17,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, Response
 from pydantic import BaseModel, Field, ValidationError
 
-from kisanmitra import diagnosis, places, speech, vision
+from kisanmitra import diagnosis, evaluation, places, speech, vision
 from kisanmitra.config import settings
 from kisanmitra.entities import locations
 from kisanmitra.guards import RateLimiter, client_ip
@@ -178,6 +178,31 @@ def search_places(q: str = Query(min_length=2, max_length=80), lang: str = Query
 def reverse_place(lat: float = Query(ge=-90, le=90), lon: float = Query(ge=-180, le=180)) -> dict:
     """GPS coordinates → nearest village/town, district and state."""
     return places.reverse(lat, lon).to_dict()
+
+
+@app.get("/api/evaluation")
+def get_evaluation(refresh: bool = False) -> dict:
+    """NLP performance numbers (accuracy, precision, recall, F1, confusion matrices, model comparison, speed)."""
+    return evaluation.get_report(refresh=refresh)
+
+
+@app.get("/api/evaluation/report.md")
+def get_evaluation_markdown() -> Response:
+    """The same numbers as a written report, to hand in with the project."""
+    return Response(
+        evaluation.to_markdown(evaluation.get_report()), media_type="text/markdown; charset=utf-8",
+        headers={"Content-Disposition": 'attachment; filename="kisanmitra-evaluation-report.md"'},
+    )
+
+
+class ExplainRequest(BaseModel):
+    text: str = Field(min_length=1, max_length=300)
+
+
+@app.post("/api/evaluation/explain")
+def explain_sentence(req: ExplainRequest) -> dict:
+    """Language, intent probabilities and entities for one sentence (the interactive demo)."""
+    return evaluation.explain(req.text.strip())
 
 
 @app.post("/api/chat")

@@ -57,7 +57,8 @@ export type Details = {
   location_from?: string | null;
   english_fallback?: string;
   mandi?: {
-    source: "live" | "cached" | "sample";
+    source: "live" | "cached" | "estimate" | "sample" | "unavailable";
+    estimate?: { typical: number; low: number; high: number; for_date: string } | null;
     scope: string;
     error: string | null;
     records: MandiRecord[];
@@ -77,7 +78,20 @@ export type Details = {
   follow_up?: boolean;
   advice_entry?: { crop: string; symptom: string; problem: string; advice: string } | null;
   heard?: Heard;
-  vision?: { status: "confident" | "possible" | "unsure" | "unsupported"; predictions: VisionPrediction[] };
+  vision?: {
+    status: "confident" | "possible" | "unsure" | "unsupported";
+    predictions: VisionPrediction[];
+    /** Set when an AI model made the diagnosis (any crop, any plant part). Absent for the basic leaf model. */
+    engine?: "gemini" | "claude";
+    plant?: string | null;
+    part?: string;
+    problem?: string | null;
+    category?: string | null;
+    healthy?: boolean;
+    confidence_label?: "high" | "medium" | "low";
+    symptoms?: string[];
+    see_expert?: boolean;
+  };
 };
 
 export type BotReply = {

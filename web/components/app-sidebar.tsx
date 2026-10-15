@@ -1,6 +1,7 @@
 "use client";
 
-import { MessageSquare, Phone, Plus, Trash2 } from "lucide-react";
+import Link from "next/link";
+import { FlaskConical, MessageSquare, Phone, Plus, Trash2 } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -89,6 +90,14 @@ export function AppSidebar({
       </SidebarContent>
 
       <SidebarFooter>
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <SidebarMenuButton render={<Link href="/evaluation" />}>
+              <FlaskConical />
+              Model performance
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        </SidebarMenu>
         <div className="flex items-center gap-2 rounded-lg bg-sidebar-accent px-3 py-2 text-xs">
           <Phone className="size-4 shrink-0 text-primary" />
           <div>

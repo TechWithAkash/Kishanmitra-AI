@@ -1,5 +1,4 @@
-import { IndianRupee, TriangleAlert } from "lucide-react";
-import { Alert, AlertDescription } from "@/components/ui/alert";
+import { IndianRupee } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { NumberTicker } from "@/components/ui/number-ticker";
@@ -8,13 +7,51 @@ import type { BotReply } from "@/lib/types";
 
 const inr = (v: number | string) => `₹${Number(v).toLocaleString("en-IN")}`;
 
-function ago(unixSeconds: number): string {
-  const hours = Math.max(1, Math.round((Date.now() / 1000 - unixSeconds) / 3600));
-  return hours < 48 ? `${hours} hour${hours === 1 ? "" : "s"} ago` : `${Math.round(hours / 24)} days ago`;
+function asOf(unixSeconds: number): string {
+  return new Date(unixSeconds * 1000).toLocaleString("en-IN", { day: "numeric", month: "short", hour: "numeric", minute: "2-digit" });
+}
+
+/** Usual price range when no live or saved prices exist. Clearly an estimate, never a market report. */
+function EstimateCard({ estimate, commodity }: { estimate: NonNullable<NonNullable<BotReply["details"]["mandi"]>["estimate"]>; commodity: string }) {
+  const span = Math.max(1, estimate.high - estimate.low);
+  const position = Math.min(100, Math.max(0, ((estimate.typical - estimate.low) / span) * 100));
+  return (
+    <Card size="sm" className="w-full max-w-md">
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <IndianRupee className="size-4 text-primary" />
+          <span className="capitalize">{commodity}</span>
+          <Badge variant="secondary">Estimate</Badge>
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="flex flex-col gap-3">
+        <div>
+          <div className="flex items-baseline gap-1 text-3xl font-semibold tabular-nums">
+            <span>₹</span>
+            <NumberTicker value={estimate.typical} />
+            <span className="text-sm font-normal text-muted-foreground">/ quintal, usual level</span>
+          </div>
+        </div>
+        <div>
+          <div className="relative h-2 rounded-full bg-muted" role="img" aria-label={`Usual range ${estimate.low} to ${estimate.high} rupees per quintal`}>
+            <div className="absolute inset-y-0 rounded-full bg-primary/30" style={{ left: 0, right: 0 }} />
+            <div className="absolute top-1/2 size-3.5 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-background bg-primary" style={{ left: `${position}%` }} />
+          </div>
+          <div className="mt-1.5 flex justify-between text-xs text-muted-foreground tabular-nums">
+            <span>{inr(estimate.low)}</span>
+            <span>usual range</span>
+            <span>{inr(estimate.high)}</span>
+          </div>
+        </div>
+        <p className="text-xs text-muted-foreground">An estimate of the usual price at this time of year, not today&apos;s market rate. Ask at your nearest mandi for today&apos;s rate.</p>
+      </CardContent>
+    </Card>
+  );
 }
 
 export function PriceCard({ mandi, commodity }: { mandi: NonNullable<BotReply["details"]["mandi"]>; commodity: string }) {
   const rows = mandi.records.slice(0, 3);
+  if (!rows.length && mandi.estimate) return <EstimateCard estimate={mandi.estimate} commodity={commodity} />;
   if (!rows.length) return null;
   const top = rows[0];
 
@@ -25,7 +62,11 @@ export function PriceCard({ mandi, commodity }: { mandi: NonNullable<BotReply["d
           <IndianRupee className="size-4 text-primary" />
           <span className="capitalize">{commodity}</span>
           <Badge variant={mandi.source === "live" ? "default" : "secondary"}>
-            {mandi.source === "live" ? "Live" : mandi.source === "cached" ? "Saved" : "Sample"}
+            {mandi.source === "live"
+              ? "Live"
+              : mandi.source === "cached" && mandi.fetched_at
+                ? `As of ${asOf(mandi.fetched_at)}`
+                : "Demo data"}
           </Badge>
         </CardTitle>
       </CardHeader>
@@ -60,22 +101,6 @@ export function PriceCard({ mandi, commodity }: { mandi: NonNullable<BotReply["d
             ))}
           </TableBody>
         </Table>
-        {mandi.source === "cached" && mandi.fetched_at && (
-          <Alert>
-            <TriangleAlert />
-            <AlertDescription>
-              Live mandi data is unavailable right now. These prices were saved {ago(mandi.fetched_at)}.
-            </AlertDescription>
-          </Alert>
-        )}
-        {mandi.source === "sample" && (
-          <Alert>
-            <TriangleAlert />
-            <AlertDescription>
-              Live mandi data is unavailable right now, so these are sample prices for demonstration only.
-            </AlertDescription>
-          </Alert>
-        )}
       </CardContent>
     </Card>
   );

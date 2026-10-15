@@ -48,6 +48,13 @@ def predict_intent(text: str) -> tuple[str, float]:
     return str(model.classes_[best]), float(probs[best])
 
 
+def intent_probabilities(text: str) -> dict[str, float]:
+    """Probability of every intent for `text` (they add up to 1)."""
+    model = get_model()
+    probs = model.predict_proba([text.lower()])[0]
+    return {str(c): round(float(p), 4) for c, p in zip(model.classes_, probs)}
+
+
 def evaluate() -> None:
     from sklearn.metrics import classification_report
     from sklearn.model_selection import train_test_split

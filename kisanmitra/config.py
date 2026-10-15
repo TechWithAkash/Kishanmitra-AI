@@ -17,8 +17,8 @@ def load_env(path: Path = ROOT / ".env") -> None:
 
 load_env()  # must run before the settings below (and before any module reads an API key)
 
-SECRET_VARS = ("OPENWEATHER_API_KEY", "DATA_GOV_API_KEY")
-_SECRET_PARAMS = re.compile(r"(appid|api-key|apikey|key|token)=[^&\s'\"]+", re.IGNORECASE)
+SECRET_VARS = ("OPENWEATHER_API_KEY", "DATA_GOV_API_KEY", "GEMINI_API_KEY", "GOOGLE_API_KEY", "ANTHROPIC_API_KEY")
+_SECRET_PARAMS = re.compile(r"(appid|api-key|apikey|key|token|x-goog-api-key)=[^&\s'\"]+", re.IGNORECASE)
 
 
 def redact(text: str) -> str:
@@ -52,6 +52,8 @@ class Settings:
     max_text_chars: int
     trust_proxy: bool                # read the client IP from X-Forwarded-For (API sits behind the web proxy)
     log_level: str
+    estimated_prices: bool           # when no live or saved prices exist, show a labelled ESTIMATE of the usual price
+    demo_mode: bool                  # show the built-in DEMO mandi prices when no real prices exist (for presentations)
     tts_rate: str                    # speaking speed of the neural voice, e.g. "-8%" (a little slower = clearer)
     allow_mymemory: bool             # use MyMemory when Google Translate fails (its quality is poor: off by default)
     contact: str                     # sent in the User-Agent of free public APIs (OpenStreetMap asks for this)
@@ -69,6 +71,8 @@ def load_settings() -> Settings:
         max_text_chars=_int("KISANMITRA_MAX_TEXT_CHARS", 1000),
         trust_proxy=_flag("KISANMITRA_TRUST_PROXY", True),
         log_level=os.environ.get("KISANMITRA_LOG_LEVEL", "INFO").upper(),
+        estimated_prices=_flag("KISANMITRA_ESTIMATED_PRICES", True),
+        demo_mode=_flag("KISANMITRA_DEMO_MODE", False),
         tts_rate=os.environ.get("KISANMITRA_TTS_RATE", "-8%"),
         allow_mymemory=_flag("KISANMITRA_ALLOW_MYMEMORY", False),
         contact=os.environ.get("KISANMITRA_CONTACT", "academic project"),

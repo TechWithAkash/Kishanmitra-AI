@@ -51,9 +51,8 @@ def _crop_disease(ents: Entities, place: places.Place | None, details: dict) -> 
     return f"Possible problem in {crop_name}: {entry['problem']}.\nWhat to do: {entry['advice']}\n{HELPLINE}"
 
 
-def _ago(ts: float) -> str:
-    hours = max(1, round((time.time() - ts) / 3600))
-    return f"{hours} hour{'s' if hours != 1 else ''}" if hours < 48 else f"{round(hours / 24)} days"
+def _as_of(ts: float) -> str:
+    return time.strftime("%d %b, %H:%M", time.localtime(ts)).lstrip("0")
 
 
 def _market_price(ents: Entities, place: places.Place | None, details: dict) -> str:
@@ -65,16 +64,28 @@ def _market_price(ents: Entities, place: places.Place | None, details: dict) -> 
     result = mandi.get_prices(crop["agmarknet"], district=district, state=state)
     details["mandi"] = {
         "source": result.source, "scope": result.scope, "error": result.error,
-        "records": result.records, "fetched_at": result.fetched_at,
+        "records": result.records, "fetched_at": result.fetched_at, "estimate": result.estimate,
     }
+    if result.source == "estimate" and result.estimate:
+        est, name = result.estimate, crop["en"]
+        where = f" in {place.state}" if place and place.state else ""
+        details["speech"] = (f"The usual {name} price{where} is around {est['typical']:,} rupees per quintal. "
+                             "This is an estimate, not today's rate.")
+        return (f"Estimated {name} price{where}: about Rs {est['typical']:,} per quintal "
+                f"(usual range Rs {est['low']:,} to Rs {est['high']:,}).\n"
+                "This is an estimate of the usual price, not today's market rate. "
+                "For today's rate, ask at your nearest mandi.")
+    if result.source == "unavailable":
+        return (f"I could not get today's {crop['en']} prices right now. "
+                "Please try again a little later, or ask at your nearest mandi.")
     if not result.records:
         return f"No mandi price for {crop['en']} has been reported today. Please try again tomorrow."
 
     lines = []
     if result.source == "sample":
-        lines.append("(Live mandi data is unavailable right now. These are SAMPLE prices for demonstration only.)")
+        lines.append("(Demo prices)")
     elif result.source == "cached" and result.fetched_at:
-        lines.append(f"(Live mandi data is unavailable right now. These prices were saved {_ago(result.fetched_at)} ago.)")
+        lines.append(f"Prices as of {_as_of(result.fetched_at)}.")
     if place and result.scope != "district":
         where = place.state if result.scope == "state" else "India"
         lines.append(f"No report from {place.district or place.name} today, so here are other markets in {where}.")
@@ -83,8 +94,8 @@ def _market_price(ents: Entities, place: places.Place | None, details: dict) -> 
     top = result.records[0]
     details["speech"] = (f"{crop['en'].capitalize()} price in {top['market']} market is "
                          f"{float(top['modal_price']):,.0f} rupees per quintal.")
-    if result.source != "live":
-        details["speech"] = ("These are sample prices. " if result.source == "sample" else "These are saved prices. ") + details["speech"]
+    if result.source == "sample":
+        details["speech"] = "These are demo prices. " + details["speech"]
     for r in result.records[:3]:
         lines.append(
             f"- {r['market']} ({r['district']}): Rs {float(r['modal_price']):,.0f} "
@@ -194,8 +205,10 @@ def respond(
     speech_lang: str | None = None,
     place: places.Place | None = None,
     context: dict | None = None,
-) -> Reply:
-    """`place`: the farmer's saved/GPS location. `context`: the previous topic, e.g. {"intent": "market_price", "crop": "onion"}."""
+    only_intents: tuple[str, ...] | None = None,
+) -> Reply | None:
+    """`place`: the farmer's saved/GPS location. `context`: the previous topic, e.g. {"intent": "market_price", "crop": "onion"}.
+    `only_intents`: if given and the question turns out to be about something else, return None without doing any work."""
     detected = detect_language(text)
     # Hindi vs Marathi can't always be told apart from a (possibly misspelled)
     # transcript; the language Whisper heard in the audio is the better signal.
@@ -240,6 +253,9 @@ def respond(
     if intent == "market_price" and not ents.crop and ctx.get("crop") and ctx.get("intent") == "market_price":
         ents.crop = ctx["crop"]
         details["follow_up"] = True
+
+    if only_intents is not None and intent not in only_intents:
+        return None
 
     resolved = _resolve_place(intent, ents, texts, place, default_location, details)
     if resolved is not None:

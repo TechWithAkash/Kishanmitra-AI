@@ -1,0 +1,19 @@
+{
+  "_basis": "Rough typical levels (Rs per quintal) with seasonal patterns, anchored on the government's published minimum support prices and usual Agmarknet ranges. NOT measured data and NOT today's market rate. Used only when live and saved prices are both unavailable, and always shown as an estimate.",
+  "crops": {
+    "Tomato":              {"base": 1800, "spread": [0.60, 1.60], "months": [0.75, 0.70, 0.80, 0.95, 1.10, 1.35, 1.70, 1.60, 1.30, 1.10, 0.90, 0.75]},
+    "Onion":               {"base": 1800, "spread": [0.70, 1.40], "months": [0.85, 0.80, 0.75, 0.80, 0.90, 1.00, 1.10, 1.20, 1.30, 1.25, 1.10, 0.95]},
+    "Potato":              {"base": 1700, "spread": [0.80, 1.25], "months": [0.85, 0.80, 0.80, 0.85, 0.95, 1.05, 1.15, 1.20, 1.20, 1.10, 0.95, 0.90]},
+    "Wheat":               {"base": 2550, "spread": [0.93, 1.08], "months": [0.97, 0.95, 0.93, 0.95, 1.00, 1.03, 1.05, 1.05, 1.05, 1.04, 1.02, 0.99]},
+    "Paddy(Dhan)(Common)": {"base": 2300, "spread": [0.93, 1.08], "months": [1.03, 1.00, 0.98, 0.98, 1.00, 1.02, 1.03, 1.04, 1.00, 0.95, 0.97, 1.00]},
+    "Cotton":              {"base": 7000, "spread": [0.92, 1.10], "months": [1.00, 1.00, 1.00, 1.00, 1.00, 1.02, 1.03, 1.03, 1.00, 0.97, 0.97, 0.98]},
+    "Soyabean":            {"base": 4600, "spread": [0.90, 1.10], "months": [1.02, 1.03, 1.04, 1.05, 1.05, 1.04, 1.02, 1.00, 0.97, 0.92, 0.93, 0.98]},
+    "Green Chilli":        {"base": 3800, "spread": [0.75, 1.35], "months": [0.90, 0.85, 0.85, 0.90, 1.00, 1.10, 1.20, 1.20, 1.10, 1.00, 0.95, 0.90]}
+  },
+  "states": {
+    "Maharashtra": 1.00, "Madhya Pradesh": 0.97, "Uttar Pradesh": 0.97, "Rajasthan": 1.00, "Gujarat": 1.02,
+    "Punjab": 1.00, "Haryana": 1.00, "Bihar": 0.97, "West Bengal": 1.05, "NCT of Delhi": 1.08,
+    "Karnataka": 1.00, "Tamil Nadu": 1.05, "Kerala": 1.12, "Telangana": 1.00, "Andhra Pradesh": 1.00,
+    "Chhattisgarh": 0.97, "Odisha": 1.02
+  }
+}

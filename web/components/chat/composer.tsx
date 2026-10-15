@@ -5,9 +5,7 @@ import { ArrowUp, Camera, ImagePlus, Loader2, Mic, Plus, X } from "lucide-react"
 import { IconButton } from "@/components/icon-button";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { PHOTO_CROPS } from "@/lib/crops";
 import type { PreparedImage } from "@/lib/image";
 
 export function Composer({
@@ -19,8 +17,6 @@ export function Composer({
   attachment,
   attaching,
   onRemoveAttachment,
-  crop,
-  onCropChange,
   disabled,
 }: {
   onSend: (text: string) => void;
@@ -31,8 +27,6 @@ export function Composer({
   attachment: PreparedImage | null;
   attaching: boolean;
   onRemoveAttachment: () => void;
-  crop: string;
-  onCropChange: (crop: string) => void;
   disabled: boolean;
 }) {
   const [text, setText] = useState("");
@@ -57,7 +51,7 @@ export function Composer({
     <div className="mx-auto w-full max-w-3xl px-4 pb-4">
       <div className="rounded-3xl border bg-card p-2 shadow-sm focus-within:ring-3 focus-within:ring-ring/30">
         {(attachment || attaching) && (
-          <div className="flex items-end gap-3 px-2 pt-1 pb-2">
+          <div className="px-2 pt-1 pb-2">
             <div className="relative inline-block">
               {attachment ? (
                 // eslint-disable-next-line @next/next/no-img-element
@@ -79,23 +73,6 @@ export function Composer({
                 </Button>
               )}
             </div>
-            {attachment && (
-              <div className="flex flex-col gap-1">
-                <span className="text-xs text-muted-foreground">Which crop is this? (helps accuracy)</span>
-                <Select value={crop} onValueChange={(v) => v && onCropChange(v)}>
-                  <SelectTrigger size="sm" aria-label="Crop in the photo" className="w-44">
-                    <SelectValue>{(v: string) => PHOTO_CROPS.find((c) => c.value === v)?.label ?? v}</SelectValue>
-                  </SelectTrigger>
-                  <SelectContent>
-                    {PHOTO_CROPS.map((c) => (
-                      <SelectItem key={c.value} value={c.value}>
-                        {c.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            )}
           </div>
         )}
 

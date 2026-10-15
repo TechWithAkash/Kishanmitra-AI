@@ -2,13 +2,15 @@
 
 import { useEffect } from "react";
 import confetti from "canvas-confetti";
-import { CircleCheck, Info, Leaf, TriangleAlert } from "lucide-react";
+import { CircleCheck, Info, Leaf, ShieldAlert, Sparkles, TriangleAlert } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AnimatedCircularProgressBar } from "@/components/ui/animated-circular-progress-bar";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import type { BotReply } from "@/lib/types";
+
+type Vision = NonNullable<BotReply["details"]["vision"]>;
 
 const STATUS = {
   confident: { label: "Confident", color: "#16a34a", variant: "default" as const },
@@ -17,33 +19,105 @@ const STATUS = {
   unsupported: { label: "Not supported", color: "#71717a", variant: "outline" as const },
 };
 
+const CONFIDENCE_LABEL = { high: "High confidence", medium: "Medium confidence", low: "Low confidence" };
+const PART_LABEL: Record<string, string> = {
+  leaf: "leaf", fruit: "fruit", stem: "stem", root: "root", flower: "flower",
+  whole_plant: "whole plant", field: "field", other: "plant", not_a_plant: "not a plant",
+};
+const CATEGORY_LABEL: Record<string, string> = {
+  fungal: "Fungal", bacterial: "Bacterial", viral: "Virus", pest: "Pest", nutrient_deficiency: "Nutrient deficiency",
+  water_stress: "Water stress", heat_or_sun_damage: "Heat / sun damage", physical_damage: "Physical damage", weed: "Weed", other: "Other",
+};
+
 const FRESH_MS = 6000;
 
-export function DiagnosisCard({
-  vision,
-  createdAt,
-}: {
-  vision: NonNullable<BotReply["details"]["vision"]>;
-  createdAt?: number;
-}) {
-  const s = STATUS[vision.status];
-  const [top, ...others] = vision.predictions;
-
-  const healthy = vision.status === "confident" && !!top?.healthy;
-
-  // Celebrate a healthy crop, but only when the answer has just arrived (not when reloading history).
+/** Celebrate a healthy crop, but only when the answer has just arrived (not when reloading history). */
+function useHealthyConfetti(healthy: boolean, createdAt?: number) {
   useEffect(() => {
     if (!healthy || createdAt === undefined || Date.now() - createdAt > FRESH_MS) return;
     confetti({ particleCount: 90, spread: 70, origin: { y: 0.7 }, colors: ["#16a34a", "#84cc16", "#f59e0b"] });
   }, [healthy, createdAt]);
+}
+
+/** Result from an AI vision model: any crop, any plant part. */
+function AiCard({ vision, createdAt }: { vision: Vision; createdAt?: number }) {
+  const confidence = vision.confidence_label ?? "low";
+  const healthy = !!vision.healthy && confidence === "high";
+  useHealthyConfetti(healthy, createdAt);
+  const part = vision.part ? PART_LABEL[vision.part] : null;
+  const title = vision.healthy ? "Looks healthy" : (vision.problem ?? "Not clear from this photo");
+
+  return (
+    <Card size="sm" className="w-full max-w-md">
+      <CardHeader>
+        <CardTitle className="flex flex-wrap items-center gap-2">
+          {healthy ? <CircleCheck className="size-4 text-primary" /> : <Leaf className="size-4 text-primary" />}
+          Photo check
+          <Badge variant={confidence === "high" ? "default" : confidence === "medium" ? "secondary" : "outline"}>
+            {CONFIDENCE_LABEL[confidence]}
+          </Badge>
+          <Badge variant="outline" className="gap-1 font-normal">
+            <Sparkles className="size-3" /> AI
+          </Badge>
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="flex flex-col gap-3">
+        <div>
+          <p className="text-xs text-muted-foreground capitalize">
+            {[vision.plant, part].filter(Boolean).join(" · ") || "Plant not identified"}
+          </p>
+          <p className="text-lg leading-snug font-semibold">{title}</p>
+          {vision.category && !vision.healthy && (
+            <Badge variant="secondary" className="mt-1.5 font-normal">
+              {CATEGORY_LABEL[vision.category] ?? vision.category}
+            </Badge>
+          )}
+        </div>
+
+        {vision.symptoms && vision.symptoms.length > 0 && (
+          <div>
+            <p className="mb-1 text-xs font-medium uppercase tracking-wide text-muted-foreground">What I can see</p>
+            <ul className="list-disc space-y-0.5 pl-5 text-sm">
+              {vision.symptoms.map((s) => (
+                <li key={s}>{s}</li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        {vision.see_expert || confidence !== "high" ? (
+          <Alert>
+            <ShieldAlert />
+            <AlertDescription>
+              Please confirm with an expert before spraying anything: Kisan Call Centre 1800-180-1551 (free) or your
+              nearest Krishi Vigyan Kendra.
+            </AlertDescription>
+          </Alert>
+        ) : (
+          <Alert>
+            <Info />
+            <AlertDescription>AI can make mistakes. If the problem spreads, ask an expert.</AlertDescription>
+          </Alert>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
+/** Result from the basic on-device leaf model (used when no AI key is set or the AI is unavailable). */
+function LeafModelCard({ vision, createdAt }: { vision: Vision; createdAt?: number }) {
+  const [top, ...others] = vision.predictions;
+  const s = STATUS[vision.status];
+  const healthy = vision.status === "confident" && !!top?.healthy;
+  useHealthyConfetti(healthy, createdAt);
 
   if (!top) {
     return (
       <Alert className="max-w-md">
         <Info />
         <AlertDescription>
-          The photo check does not cover this crop yet. Describe the problem in words (for example “yellow leaves”)
-          and I will help from there.
+          This basic photo check only understands single leaves of a few crops. Describe the problem in words (for
+          example “yellow leaves”) and I will help from there.
         </AlertDescription>
       </Alert>
     );
@@ -85,23 +159,19 @@ export function DiagnosisCard({
           </div>
         )}
 
-        {vision.status === "unsure" ? (
-          <Alert>
-            <TriangleAlert />
-            <AlertDescription>
-              Try again with a clear, close-up photo of one affected leaf in daylight.
-            </AlertDescription>
-          </Alert>
-        ) : (
-          <Alert>
-            <Info />
-            <AlertDescription>
-              A photo check can be wrong, especially for field photos with many leaves. Confirm with the Kisan Call
-              Centre (1800-180-1551) before spraying.
-            </AlertDescription>
-          </Alert>
-        )}
+        <Alert>
+          {vision.status === "unsure" ? <TriangleAlert /> : <Info />}
+          <AlertDescription>
+            {vision.status === "unsure"
+              ? "This basic check only understands single leaves. Try a close-up of one affected leaf, or describe the problem in words."
+              : "A photo check can be wrong. Confirm with the Kisan Call Centre (1800-180-1551) before spraying."}
+          </AlertDescription>
+        </Alert>
       </CardContent>
     </Card>
   );
+}
+
+export function DiagnosisCard({ vision, createdAt }: { vision: Vision; createdAt?: number }) {
+  return vision.engine ? <AiCard vision={vision} createdAt={createdAt} /> : <LeafModelCard vision={vision} createdAt={createdAt} />;
 }

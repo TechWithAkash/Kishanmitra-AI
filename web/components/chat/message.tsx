@@ -97,8 +97,8 @@ function RichCards({ reply, createdAt }: { reply: BotReply; createdAt?: number }
   return (
     <>
       {reply.intent === "crop_image" && vision && <DiagnosisCard vision={vision} createdAt={createdAt} />}
-      {reply.intent === "market_price" && mandi && mandi.records.length > 0 && (
-        <PriceCard mandi={mandi} commodity={mandi.records[0].commodity} />
+      {reply.intent === "market_price" && mandi && (mandi.records.length > 0 || mandi.estimate) && (
+        <PriceCard mandi={mandi} commodity={mandi.records[0]?.commodity ?? reply.entities.crop ?? ""} />
       )}
       {reply.intent === "weather" && weather && <WeatherCard weather={weather} lang={reply.lang} />}
     </>

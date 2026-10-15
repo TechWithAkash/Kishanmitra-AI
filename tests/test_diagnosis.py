@@ -129,10 +129,25 @@ def test_crop_hint_is_passed_to_the_model(monkeypatch):
 def test_unsupported_crop_is_not_forced_into_a_wrong_class(monkeypatch):
     called = []
     monkeypatch.setattr(vision, "classify", lambda *a, **k: called.append(1))
-    r = diagnosis.diagnose(jpeg(), "en", text="my onion leaves are drying")
+    r = diagnosis.diagnose(jpeg(), "en", crop="onion")        # no description to fall back on
     assert not called and r.details["vision"]["status"] == "unsupported"
     assert "cannot check onion" in r.english
     assert diagnosis.diagnose(jpeg(), "en", crop="soybean").details["vision"]["status"] == "unsupported"
+
+
+def test_a_photo_the_leaf_model_cannot_read_is_answered_from_the_farmers_description(monkeypatch):
+    monkeypatch.setattr(vision, "classify", fake_classify(("Tomato with Early Blight", 0.10)))   # a fruit photo: no idea
+    r = diagnosis.diagnose(jpeg(), "en", text="why are my tomato leaves yellow")
+    assert r.intent == "crop_disease" and "based on what you wrote" in r.english
+    assert "Early blight or nitrogen deficiency" in r.english
+    assert "vision" not in r.details            # no "Not sure 0%" card: it would only confuse
+
+
+def test_description_fallback_does_not_run_unrelated_work(monkeypatch):
+    # a price question next to a photo must not trigger a mandi lookup just to be thrown away
+    monkeypatch.setattr(vision, "classify", fake_classify(("Tomato with Early Blight", 0.10)))
+    r = diagnosis.diagnose(jpeg(), "en", text="what is the onion price in Nashik today")
+    assert r.details["vision"]["status"] in ("unsure", "unsupported")
 
 
 def test_endpoint_passes_crop(monkeypatch):

@@ -11,8 +11,13 @@ def isolated(tmp_path, monkeypatch):
     # The developer's real .env keys must never be used by tests.
     monkeypatch.delenv("OPENWEATHER_API_KEY", raising=False)
     monkeypatch.delenv("DATA_GOV_API_KEY", raising=False)
+    for name in ("GEMINI_API_KEY", "GOOGLE_API_KEY", "ANTHROPIC_API_KEY"):
+        monkeypatch.delenv(name, raising=False)
+    from kisanmitra import vision_llm
+    monkeypatch.setattr(vision_llm.requests, "post", lambda *a, **k: (_ for _ in ()).throw(AssertionError("test tried to use the real network")))
+    vision_llm._cache.clear()
     # A temporary cache directory, so tests never read or write the real mandi cache.
-    monkeypatch.setattr(mandi, "settings", type("S", (), {"cache_dir": tmp_path})())
+    monkeypatch.setattr(mandi, "settings", type("S", (), {"cache_dir": tmp_path, "demo_mode": False, "estimated_prices": True})())
     from kisanmitra import translate as tr
     monkeypatch.setattr(tr, "settings", type("S", (), {"cache_dir": tmp_path, "contact": "test"})())
     monkeypatch.setattr(tr, "_disk", None)

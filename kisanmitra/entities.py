@@ -76,11 +76,105 @@ def known_words() -> frozenset[str]:
     return frozenset(words)
 
 
+FUZZY_MIN_LENGTH = 5      # shorter words must match exactly: "worm" and "word" are one letter apart
+
+
+def edit_distance(a: str, b: str) -> int:
+    """Number of single-letter changes (insert, delete, replace, swap neighbours) to turn `a` into `b`."""
+    prev2, prev = None, list(range(len(b) + 1))
+    for i, ca in enumerate(a, 1):
+        cur = [i]
+        for j, cb in enumerate(b, 1):
+            best = min(prev[j] + 1, cur[j - 1] + 1, prev[j - 1] + (ca != cb))
+            if prev2 is not None and i > 1 and j > 1 and ca == b[j - 2] and a[i - 2] == cb:
+                best = min(best, prev2[j - 2] + 1)   # swapped neighbours: "teh" -> "the"
+            cur.append(best)
+        prev2, prev = prev, cur
+    return prev[-1]
+
+
+@lru_cache(maxsize=2)
+def _spelling_vocab(kind: str) -> dict[str, str]:
+    """Single Latin-script words we know for crops / symptoms, mapped to what they mean."""
+    table = {k: v["variants"] for k, v in crops().items()} if kind == "crop" else _load("symptoms.json")
+    return {
+        variant.lower(): canon
+        for canon, variants in table.items()
+        for variant in variants
+        if variant.isascii() and variant.isalpha() and len(variant) >= FUZZY_MIN_LENGTH
+    }
+
+
+def sound_key(word: str) -> str:
+    """Hindi written in English letters has no fixed spelling: aloo / aaloo / aalu / alu are one word.
+    This folds the usual long-vowel variants together (aa->a, ee->i, oo->u, ii->i, uu->u).
+    It deliberately does NOT fold everything: "root" becomes "rut", which is not the symptom word "rot"."""
+    for long, short in (("aa", "a"), ("ee", "i"), ("oo", "u"), ("ii", "i"), ("uu", "u")):
+        word = word.replace(long, short)
+    return word
+
+
+@lru_cache(maxsize=2)
+def _sound_vocab(kind: str) -> dict[str, str]:
+    table = {k: v["variants"] for k, v in crops().items()} if kind == "crop" else _load("symptoms.json")
+    return {
+        sound_key(v.lower()): canon
+        for canon, variants in table.items()
+        for v in variants
+        if v.isascii() and v.isalpha() and len(v) >= 3
+    }
+
+
+def _fuzzy(text: str, kind: str) -> str | None:
+    """Understand misspelled words ("yello leaves", "tomatoo", "cotten", "aaloo"). Only crops and symptoms: never places.
+
+    1. Same sound: aaloo = aloo (see sound_key).
+    2. One slip is allowed in words up to 7 letters, two in longer words, and the first letter must be right.
+       "weather" is 3 edits from "wheat" and "word" is only 4 letters, so neither is mistaken for a crop or symptom.
+    """
+    vocab, sounds = _spelling_vocab(kind), _sound_vocab(kind)
+    for word in re.findall(r"[a-z]{3,}", text):
+        if sound_key(word) in sounds:
+            return sounds[sound_key(word)]
+        if len(word) < FUZZY_MIN_LENGTH:
+            continue
+        allowed = 1 if len(word) <= 7 else 2
+        for known, meaning in vocab.items():
+            if known[0] == word[0] and abs(len(known) - len(word)) <= allowed and edit_distance(word, known) <= allowed:
+                return meaning
+    return None
+
+
+def explain_entities(text: str) -> list[dict]:
+    """Where each entity was found in `text`, for highlighting: [{type, value, text, start, end, how}]."""
+    lower = text.lower()
+    found: list[dict] = []
+    for kind, patterns in _patterns().items():
+        best = None
+        for pattern, canon in patterns:
+            m = pattern.search(lower)
+            if m and (best is None or m.start() < best[0].start()):
+                best = (m, canon)
+        if best:
+            m, canon = best
+            found.append({"type": kind, "value": canon, "text": text[m.start():m.end()], "start": m.start(), "end": m.end(), "how": "keyword list"})
+            continue
+        if kind in ("crop", "symptom"):  # misspelled words
+            for m in re.finditer(r"[a-z]{3,}", lower):
+                value = _fuzzy(m.group(0), kind)
+                if value:
+                    found.append({"type": kind, "value": value, "text": text[m.start():m.end()], "start": m.start(), "end": m.end(), "how": "spelling correction"})
+                    break
+    return sorted(found, key=lambda e: e["start"])
+
+
 def extract_entities(text: str) -> Entities:
     text = text.lower()
     p = _patterns()
+    crop = _first_match(text, p["crop"])
+    symptom = _first_match(text, p["symptom"])
     return Entities(
-        crop=_first_match(text, p["crop"]),
-        symptom=_first_match(text, p["symptom"]),
+        crop=crop or _fuzzy(text, "crop"),
+        symptom=symptom or _fuzzy(text, "symptom"),
         location=_first_match(text, p["location"]),
     )

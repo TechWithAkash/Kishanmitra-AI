@@ -27,14 +27,28 @@ def test_crop_disease_romanized_hindi():
     assert r.text.startswith("[hi-rm]")  # replied in romanized Hindi
 
 
-def test_price_uses_sample_when_api_down_and_nothing_saved(monkeypatch):
-    def boom(*a, **k):
-        raise requests.ConnectionError("down")
-    monkeypatch.setattr(mandi, "_fetch_live", boom)
-    r = pipeline.respond("नाशिक मध्ये कांद्याचा भाव काय आहे?")
+def test_with_no_real_prices_the_farmer_gets_a_labelled_estimate_not_a_fake_market_report(monkeypatch):
+    r = pipeline.respond("नाशिक मध्ये कांद्याचा भाव काय आहे?")   # the mandi API is down (autouse fixture), nothing saved
     assert r.intent == "market_price" and r.lang == "mr"
-    assert r.details["mandi"]["source"] == "sample"
-    assert "SAMPLE" in r.english and "Lasalgaon" in r.english
+    m = r.details["mandi"]
+    assert m["source"] == "estimate" and m["records"] == []                     # no invented per-market rows
+    assert m["estimate"]["low"] < m["estimate"]["typical"] < m["estimate"]["high"]
+    assert "Estimated onion price" in r.english and "not today's market rate" in r.english
+    assert "ask at your nearest mandi" in r.english
+    for market in ("Lasalgaon", "Pune (Pune)"):                                 # it must not pretend a mandi reported this
+        assert market not in r.english
+
+
+def test_estimates_can_be_switched_off_and_then_prices_are_simply_unavailable(monkeypatch):
+    monkeypatch.setattr(mandi, "settings", type("S", (), {"cache_dir": mandi.settings.cache_dir, "demo_mode": False, "estimated_prices": False})())
+    r = pipeline.respond("onion price in Nashik")
+    assert r.details["mandi"]["source"] == "unavailable" and "could not get today's onion prices" in r.english
+
+
+def test_demo_mode_shows_the_built_in_demo_prices_labelled_as_demo(monkeypatch):
+    monkeypatch.setattr(mandi, "settings", type("S", (), {"cache_dir": mandi.settings.cache_dir, "demo_mode": True, "estimated_prices": True})())
+    r = pipeline.respond("onion price in Nashik")
+    assert r.details["mandi"]["source"] == "sample" and "(Demo prices)" in r.english and "Lasalgaon" in r.english
 
 
 def test_price_falls_back_to_saved_prices_when_api_down(monkeypatch):
@@ -47,8 +61,10 @@ def test_price_falls_back_to_saved_prices_when_api_down(monkeypatch):
         raise requests.ConnectionError("down")
     monkeypatch.setattr(mandi, "_fetch_live", boom)
     r = pipeline.respond("onion price in Nashik")
-    assert r.details["mandi"]["source"] == "cached"
-    assert "saved" in r.english and "SAMPLE" not in r.english and "Lasalgaon" in r.english
+    assert r.details["mandi"]["source"] == "cached" and r.details["mandi"]["fetched_at"]
+    assert "Prices as of" in r.english and "Lasalgaon" in r.english
+    for word in ("unavailable", "SAMPLE", "sample", "API", "down"):   # no apology, no talk of outages
+        assert word not in r.english
 
 
 def test_price_live_filters_to_district(monkeypatch):
@@ -154,3 +170,40 @@ def test_ordinary_weather_words_are_never_taken_for_villages(monkeypatch):
     monkeypatch.setattr(places, "search", lambda q, limit=6, language="en": [places.Place("Garmi", 21.1, 79.0, "Maharashtra", "Nagpur")])
     r = pipeline.respond("aaj kitni garmi hai? kal baarish hogi kya?", place=NASHIK)
     assert r.details["place"]["name"] == "Nashik" and r.details["place_from"] == "saved"
+
+
+@pytest.mark.parametrize("text, crop, symptom", [
+    ("why are my tomato are look yello", "tomato", "yellowing"),
+    ("my tomatoo plants have yelow leafs", "tomato", "yellowing"),
+    ("cotten crop has bollworm", "cotton", "pests"),
+    ("yellow rust on wheet", "wheat", "yellowing"),
+])
+def test_common_spelling_mistakes_are_understood(text, crop, symptom):
+    from kisanmitra.entities import extract_entities
+    e = extract_entities(text)
+    assert (e.crop, e.symptom) == (crop, symptom)
+
+
+@pytest.mark.parametrize("text", [
+    "what is the weather like today", "is it a good price for the word", "the water is cold", "tell me about the market",
+])
+def test_ordinary_words_are_not_mistaken_for_crops_or_symptoms(text):
+    from kisanmitra.entities import extract_entities
+    e = extract_entities(text)
+    assert (e.crop, e.symptom) == (None, None)    # "weather" is not "wheat", "word" is not "worm"
+
+
+@pytest.mark.parametrize("text, crop", [
+    ("what is the price of aaloo in nashik?", "potato"), ("aalu ka bhav", "potato"), ("dhaan ki fasal sookh rahi hai", "paddy"),
+    ("pyaaz ka rate kya hai", "onion"), ("tamaatar ka bhav", "tomato"),
+])
+def test_hinglish_spelling_variants_of_the_same_word_are_understood(text, crop):
+    from kisanmitra.entities import extract_entities
+    assert extract_entities(text).crop == crop
+
+
+@pytest.mark.parametrize("text", ["the root is long", "I need food and feed", "see the tree", "we cool the room", "he took a look at the book"])
+def test_sound_folding_does_not_create_false_crops_or_symptoms(text):
+    from kisanmitra.entities import extract_entities
+    e = extract_entities(text)
+    assert (e.crop, e.symptom) == (None, None)

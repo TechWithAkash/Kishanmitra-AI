@@ -30,7 +30,6 @@ export default function Home() {
   const [voiceOpen, setVoiceOpen] = useState(false);
   const [cameraOpen, setCameraOpen] = useState(false);
   const [dragging, setDragging] = useState(false);
-  const [photoCrop, setPhotoCrop] = useState("any");
   const { attachment, busy: attaching, attach, clear: clearAttachment } = useAttachment();
 
   const uploadInput = useRef<HTMLInputElement>(null);
@@ -41,7 +40,6 @@ export default function Home() {
   const settings = useLatest({ langPref, place });
   const activeChat = useLatest(active);
   const attachmentRef = useLatest(attachment);
-  const photoCropRef = useLatest(photoCrop);
 
   // First visit: offer to use the current location (the browser itself asks for permission after the tap).
   useEffect(() => {
@@ -90,15 +88,13 @@ export default function Home() {
       ? (activeIdRef.current as string)
       : addMessage(activeIdRef.current, makeMessage({ role: "user", text: t, image: image?.thumb }));
     activeIdRef.current = chatId;
-    const crop = photoCropRef.current;
     clearAttachment();
-    setPhotoCrop("any");
     setPending(true);
     try {
       const { langPref: lang, place: saved } = settings.current;
       const where = opts.place ?? saved;
       const reply = image
-        ? await api.diagnose(image.blob, lang, where?.name ?? null, t || undefined, crop)
+        ? await api.diagnose(image.blob, lang, where?.name ?? null, t || undefined)
         : await api.chat(t, lang, where, followUpContext());
       addMessage(chatId, makeMessage({ role: "assistant", text: reply.text, reply }));
     } catch (e) {
@@ -186,8 +182,6 @@ export default function Home() {
           attachment={attachment}
           attaching={attaching}
           onRemoveAttachment={clearAttachment}
-          crop={photoCrop}
-          onCropChange={setPhotoCrop}
           disabled={pending}
         />
 

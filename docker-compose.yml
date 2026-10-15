@@ -15,6 +15,7 @@ services:
       KISANMITRA_HEAVY_RATE_LIMIT: ${KISANMITRA_HEAVY_RATE_LIMIT:-30}
       KISANMITRA_CONTACT: ${KISANMITRA_CONTACT:-academic project}
       KISANMITRA_ALLOW_MYMEMORY: ${KISANMITRA_ALLOW_MYMEMORY:-0}
+      KISANMITRA_DEMO_MODE: ${KISANMITRA_DEMO_MODE:-0}
     volumes:
       - models:/models   # downloaded Whisper + plant-disease models (~600 MB, once)
       - data:/data       # saved mandi prices

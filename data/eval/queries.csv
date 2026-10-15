@@ -1,0 +1,135 @@
+text,lang,script,intent,crop,symptom,location,use_for_intent
+my tomato leaves are turning yellow,en,native,crop_disease,tomato,yellowing,,1
+there are brown spots on potato leaves,en,native,crop_disease,potato,spots,,1
+insects are attacking my cotton plants,en,native,crop_disease,cotton,pests,,1
+onion leaves are drying from the tips,en,native,crop_disease,onion,wilting,,1
+chilli leaves are curling upwards,en,native,crop_disease,chilli,leaf_curl,,1
+what should I spray for caterpillars on soybean,en,native,crop_disease,soybean,pests,,1
+wheat crop has yellow patches,en,native,crop_disease,wheat,yellowing,,1
+my paddy plants are wilting,en,native,crop_disease,paddy,wilting,,1
+tomato fruits are rotting on the plant,en,native,crop_disease,tomato,rot,,1
+how to treat black spots on tomato,en,native,crop_disease,tomato,spots,,1
+aphids are sucking sap from my crop,en,native,crop_disease,,pests,,1
+the whole plant suddenly died,en,native,crop_disease,,,,1
+what is the price of onion in Pune today,en,native,market_price,onion,,Pune,1
+tomato rate in Nashik mandi,en,native,market_price,tomato,,Nashik,1
+how much is cotton selling for in Nagpur,en,native,market_price,cotton,,Nagpur,1
+wheat price today,en,native,market_price,wheat,,,1
+current soybean rate in Indore,en,native,market_price,soybean,,Indore,1
+what is the mandi price of potato,en,native,market_price,potato,,,1
+best rate for chilli at Guntur market,en,native,market_price,chilli,,Guntur,1
+paddy rate in Raipur,en,native,market_price,paddy,,Raipur,1
+will it rain in Nashik tomorrow,en,native,weather,,,Nashik,1
+weather forecast for Pune this week,en,native,weather,,,Pune,1
+is it going to be very hot in Jaipur,en,native,weather,,,Jaipur,1
+how is the weather today,en,native,weather,,,,1
+should I irrigate today or will it rain,en,native,weather,,,,1
+temperature in Indore,en,native,weather,,,Indore,1
+will there be rain in Nagpur in the next three days,en,native,weather,,,Nagpur,1
+thank you very much,en,native,general,,,,1
+tell me about the PM Kisan scheme,en,native,general,,,,1
+मेरे टमाटर के पत्ते पीले हो रहे हैं,hi,native,crop_disease,tomato,yellowing,,1
+आलू की पत्तियों पर काले धब्बे पड़ गए हैं,hi,native,crop_disease,potato,spots,,1
+मिर्च के पत्ते मुड़ रहे हैं,hi,native,crop_disease,chilli,leaf_curl,,1
+सोयाबीन में इल्ली लग गई है,hi,native,crop_disease,soybean,pests,,1
+गेहूं की पत्तियां पीली पड़ रही हैं,hi,native,crop_disease,wheat,yellowing,,1
+टमाटर के फल सड़ रहे हैं,hi,native,crop_disease,tomato,rot,,1
+आज इंदौर मंडी में गेहूं का रेट बताओ,hi,native,market_price,wheat,,Indore,1
+टमाटर का भाव कितना चल रहा है,hi,native,market_price,tomato,,,1
+कपास कितने रुपये क्विंटल बिक रहा है,hi,native,market_price,cotton,,,1
+आलू का दाम बताइए,hi,native,market_price,potato,,,1
+नागपुर में सोयाबीन का भाव,hi,native,market_price,soybean,,Nagpur,1
+क्या कल नाशिक में बारिश होगी,hi,native,weather,,,Nashik,1
+इस हफ्ते मौसम कैसा रहेगा,hi,native,weather,,,,1
+जयपुर में कितनी गर्मी पड़ेगी,hi,native,weather,,,Jaipur,1
+अगले दो दिन बारिश होगी क्या,hi,native,weather,,,,1
+आपका धन्यवाद,hi,native,general,,,,1
+आप क्या कर सकते हैं,hi,native,general,,,,1
+पीएम किसान योजना के बारे में बताइए,hi,native,general,,,,1
+mere tamatar ke patte peele ho rahe hain,hi,latin,crop_disease,tomato,yellowing,,1
+aloo ke patton pe kale dhabbe aa gaye,hi,latin,crop_disease,potato,spots,,1
+pyaz ki fasal sookh rahi hai,hi,latin,crop_disease,onion,wilting,,1
+mirchi ke patte mud rahe hai,hi,latin,crop_disease,chilli,leaf_curl,,1
+dhan ke paudhe murjha rahe hain,hi,latin,crop_disease,paddy,wilting,,1
+soyabean me illi lag gayi,hi,latin,crop_disease,soybean,pests,,1
+gehu ke patte peele pad gaye,hi,latin,crop_disease,wheat,yellowing,,1
+tamatar sad raha hai kya karu,hi,latin,crop_disease,tomato,rot,,1
+patton pe safed powder jaisa dikh raha hai,hi,latin,crop_disease,,,,1
+pune me pyaz ka bhav kya hai,hi,latin,market_price,onion,,Pune,1
+aaj gehu ka rate batao,hi,latin,market_price,wheat,,,1
+indore mandi me soyabean ka daam,hi,latin,market_price,soybean,,Indore,1
+tamatar ka bhav kitna chal raha hai,hi,latin,market_price,tomato,,,1
+kapas kitne me bik raha hai nagpur me,hi,latin,market_price,cotton,,Nagpur,1
+aloo ka rate,hi,latin,market_price,potato,,,1
+bhav kya hai,hi,latin,market_price,,,,1
+kal nashik me barish hogi kya,hi,latin,weather,,,Nashik,1
+is hafte mausam kaisa rahega,hi,latin,weather,,,,1
+jaipur me kitni garmi hogi,hi,latin,weather,,,Jaipur,1
+aaj tapman kitna hai,hi,latin,weather,,,,1
+agle do din baarish hogi kya,hi,latin,weather,,,,1
+barish,hi,latin,weather,,,,1
+dhanyavad bhai,hi,latin,general,,,,1
+pm kisan yojana ke baare me batao,hi,latin,general,,,,1
+माझ्या टोमॅटोची पाने पिवळी पडत आहेत,mr,native,crop_disease,tomato,yellowing,,1
+मिरचीची पाने वाकडी होत आहेत,mr,native,crop_disease,chilli,leaf_curl,,1
+सोयाबीनवर अळी आली आहे,mr,native,crop_disease,soybean,pests,,1
+टोमॅटो सडत आहेत,mr,native,crop_disease,tomato,rot,,1
+पुण्यात कांद्याचा भाव काय आहे,mr,native,market_price,onion,,Pune,1
+नाशिकमध्ये टोमॅटोचा दर किती आहे,mr,native,market_price,tomato,,Nashik,1
+आज गव्हाचा बाजारभाव सांगा,mr,native,market_price,wheat,,,1
+कापसाला काय भाव मिळतोय,mr,native,market_price,cotton,,,1
+लातूरमध्ये सोयाबीनचा दर,mr,native,market_price,soybean,,Latur,1
+उद्या नाशिकमध्ये पाऊस पडेल का,mr,native,weather,,,Nashik,1
+நாளை மழை பெய்யுமா,ta,native,,,,,0
+தக்காளி விலை என்ன,ta,native,,,,,0
+என் தக்காளி இலைகள் மஞ்சளாக மாறுகின்றன,ta,native,,,,,0
+రేపు వర్షం పడుతుందా,te,native,,,,,0
+ఉల్లిపాయ ధర ఎంత,te,native,,,,,0
+నా టమాటా ఆకులు పసుపు రంగులోకి మారుతున్నాయి,te,native,,,,,0
+কাল বৃষ্টি হবে কি,bn,native,,,,,0
+আলুর দাম কত,bn,native,,,,,0
+আমার টমেটো পাতা হলুদ হয়ে যাচ্ছে,bn,native,,,,,0
+આવતીકાલે વરસાદ પડશે,gu,native,,,,,0
+કપાસનો ભાવ શું છે,gu,native,,,,,0
+ನಾಳೆ ಮಳೆ ಬರುತ್ತದೆಯೇ,kn,native,,,,,0
+ಟೊಮೆಟೊ ಬೆಲೆ ಎಷ್ಟು,kn,native,,,,,0
+നാളെ മഴ പെയ്യുമോ,ml,native,,,,,0
+തക്കാളി വില എത്ര,ml,native,,,,,0
+ਕੱਲ੍ਹ ਮੀਂਹ ਪਵੇਗਾ,pa,native,,,,,0
+ਕਣਕ ਦਾ ਭਾਅ ਕੀ ਹੈ,pa,native,,,,,0
+माझ्या मिरचीची फळे सडत आहेत,mr,native,crop_disease,chilli,rot,,1
+कांद्यावर करपा आला आहे,mr,native,crop_disease,onion,,,1
+पानांवर पांढरी बुरशी दिसत आहे,mr,native,crop_disease,,,,1
+टोमॅटोवर पांढरी माशी आली आहे,mr,native,crop_disease,tomato,,,1
+आज कांद्याला किती भाव आहे,mr,native,market_price,onion,,,1
+सोलापूरमध्ये कापसाचा दर काय आहे,mr,native,market_price,cotton,,Solapur,1
+बटाट्याचा बाजारभाव किती,mr,native,market_price,potato,,,1
+कोल्हापूरमध्ये उद्या पाऊस आहे का,mr,native,weather,,,Kolhapur,1
+आज हवामान कसे राहील,mr,native,weather,,,,1
+नागपूरमध्ये तापमान किती आहे,mr,native,weather,,,Nagpur,1
+शुभ सकाळ,mr,native,general,,,,1
+तुम्ही मला काय सांगू शकता,mr,native,general,,,,1
+thanks a lot,en,native,general,,,,1
+help,en,native,general,,,,1
+good evening,en,native,general,,,,1
+are you a robot,en,native,general,,,,1
+ok thanks bye,en,native,general,,,,1
+शुक्रिया,hi,native,general,,,,1
+सुप्रभात,hi,native,general,,,,1
+मुझे मदद चाहिए,hi,native,general,,,,1
+shukriya,hi,latin,general,,,,1
+kaise ho,hi,latin,general,,,,1
+aap kaun ho,hi,latin,general,,,,1
+will it be sunny tomorrow in Pune,en,native,weather,,,Pune,1
+is rain expected this weekend,en,native,weather,,,,1
+how cold will it be tonight in Delhi,en,native,weather,,,Delhi,1
+garmi kitni rahegi aaj,hi,latin,weather,,,,1
+kal baarish aayegi kya,hi,native,weather,,,,1
+is mahine pyaj ka rate kya hai,hi,latin,market_price,onion,,,1
+what are tomato prices like right now,en,native,market_price,tomato,,,1
+sell price of soybean at latur,en,native,market_price,soybean,,Latur,1
+my chilli plants have white powder on the leaves,en,native,crop_disease,chilli,,,1
+small worms are eating the cotton bolls,en,native,crop_disease,cotton,pests,,1
+potato plants are rotting at the base,en,native,crop_disease,potato,rot,,1
+kapas ke patte lal ho rahe hain,hi,latin,crop_disease,cotton,,,1
+gehu me peela rang aa gaya hai,hi,latin,crop_disease,wheat,yellowing,,1

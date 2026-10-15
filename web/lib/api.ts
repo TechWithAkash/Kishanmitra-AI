@@ -1,3 +1,4 @@
+import type { EvaluationReport, Explanation } from "./eval-types";
 import type { BotReply, ChatContext, Heard, Place, VoiceResult } from "./types";
 
 export class ApiError extends Error {}
@@ -76,14 +77,12 @@ export async function diagnose(
   langPref: string,
   location: string | null,
   text?: string,
-  crop?: string,
 ): Promise<BotReply> {
   const form = new FormData();
   form.append("image", image, "crop.jpg");
   form.append("lang_pref", langPref);
   if (location) form.append("location", location);
   if (text) form.append("text", text);
-  if (crop && crop !== "any") form.append("crop", crop);
   const res = await request("/diagnose", { method: "POST", body: form });
   return res.json();
 }
@@ -99,3 +98,13 @@ export async function tts(text: string, lang: string, fromEnglish = false): Prom
   return res.blob();
 }
 
+
+export async function getEvaluation(refresh = false): Promise<EvaluationReport> {
+  const res = await request(`/evaluation${refresh ? "?refresh=true" : ""}`, { method: "GET" });
+  return res.json();
+}
+
+export async function explainSentence(text: string): Promise<Explanation> {
+  const res = await request("/evaluation/explain", json({ text }));
+  return res.json();
+}

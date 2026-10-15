@@ -4,16 +4,21 @@ Get your own free key at https://data.gov.in (set DATA_GOV_API_KEY). Without one
 public sample key is used, which is often rate-limited.
 
 Resilience: every successful answer is saved to disk. If the API is down later, the last
-saved prices (up to 48 hours old) are shown and clearly labelled as saved. Only if there is
-nothing saved does the app fall back to the built-in demo sample.
+saved prices (up to 48 hours old) are shown with the time they were fetched. If there is
+nothing saved, a clearly labelled ESTIMATE of the usual price range is given (source "estimate", see
+estimate() below: it is not measured data and is never presented as today's market rate). Per-market
+DEMO numbers (data/mandi_sample.json) are used only when KISANMITRA_DEMO_MODE=1, for presentations.
 """
 
+import hashlib
 import json
 import logging
 import os
 import threading
 import time
 from dataclasses import dataclass, field
+from datetime import date
+from functools import lru_cache
 
 import requests
 
@@ -35,7 +40,8 @@ _lock = threading.Lock()
 class PriceResult:
     records: list[dict] = field(default_factory=list)
     scope: str = "india"        # "district" | "state" | "india": how closely records match the location
-    source: str = "live"        # "live" | "cached" | "sample"
+    source: str = "live"        # "live" | "cached" | "estimate" | "sample" (demo mode only) | "unavailable"
+    estimate: dict | None = None  # {"typical", "low", "high", "for_date"} when source == "estimate"
     error: str | None = None
     fetched_at: float | None = None   # unix time the prices were downloaded (live: now; cached: earlier)
 
@@ -76,6 +82,36 @@ def _cache_get(commodity: str, state: str | None) -> tuple[list[dict], float] | 
         if entry and time.time() - entry["ts"] <= CACHE_MAX_AGE:
             return entry["records"], entry["ts"]
     return None
+
+
+# ---------------------------------------------------------------- estimate (last resort, always labelled)
+
+@lru_cache(maxsize=1)
+def _estimates() -> dict:
+    with open(DATA_DIR / "mandi_estimates.json", encoding="utf-8") as f:
+        return json.load(f)
+
+
+def estimate(commodity: str, state: str | None, today: date | None = None) -> dict | None:
+    """The usual price of `commodity` in `state` at this time of year, as a range. None if the crop is unknown.
+
+    typical = base level x seasonal factor of the month x state factor x a small daily wiggle. The wiggle is
+    derived from the date, so the same question on the same day always gets the same answer.
+    """
+    data = _estimates()
+    entry = next((v for k, v in data["crops"].items() if k.lower() == commodity.lower()), None)
+    if entry is None:
+        return None
+    today = today or date.today()
+    wiggle = int(hashlib.md5(f"{commodity}|{state}|{today}".encode()).hexdigest()[:8], 16) / 0xFFFFFFFF   # 0..1
+    typical = entry["base"] * entry["months"][today.month - 1] * data["states"].get(state or "", 1.0) * (1 + (wiggle - 0.5) * 0.06)
+    low, high = typical * entry["spread"][0], typical * entry["spread"][1]
+    return {
+        "typical": int(round(typical / 10) * 10),
+        "low": int(round(low / 50) * 50),
+        "high": int(round(high / 50) * 50),
+        "for_date": today.isoformat(),
+    }
 
 
 # ---------------------------------------------------------------- sources
@@ -132,8 +168,12 @@ def get_prices(commodity: str, district: str | None = None, state: str | None = 
         saved = _cache_get(commodity, state)
         if saved:
             (records, fetched_at), source = saved, "cached"
-        else:
+        elif settings.demo_mode:
             records, source = _load_sample(commodity), "sample"
+        elif settings.estimated_prices and (est := estimate(commodity, state)):
+            return PriceResult(records=[], scope="state" if state else "india", source="estimate", error=error, estimate=est)
+        else:
+            records, source = [], "unavailable"
 
     records = [r for r in records if r.get("commodity", "").lower() == commodity.lower()] or records
     records, scope = _narrow(records, district, state)

@@ -75,6 +75,19 @@ export function NlpDetailsSheet({ reply, onClose }: { reply: BotReply | null; on
                 </Row>
               </>
             )}
+            {reply.details.mandi && (
+              <>
+                <Separator />
+                <Row label="Mandi data source">
+                  <p className="text-sm text-muted-foreground">
+                    {{ live: "Live from data.gov.in", cached: "Last saved prices", sample: "Built-in demo numbers", estimate: "Estimated usual range (no live data)", unavailable: "Not available" }[
+                      reply.details.mandi.source
+                    ]}
+                    {reply.details.mandi.error ? ` (${reply.details.mandi.error.split(":")[0]})` : ""}
+                  </p>
+                </Row>
+              </>
+            )}
             {reply.details.follow_up && (
               <>
                 <Separator />
